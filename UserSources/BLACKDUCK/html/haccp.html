@@ -1,0 +1,443 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Reset</title>
+<link rel="stylesheet" href="jqxbase.css" type="text/css" />
+<link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+<link rel="stylesheet" href="still.css" type="text/css" />
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="demos.js"></script>
+<script type="text/javascript" src="jqx_all.js"></script>
+<script type="text/javascript" src="pass.js"></script>
+<script type="text/javascript" src="jspdf.js"></script>
+<script type="text/javascript">	
+var strYear=new Array();
+var strMonth=new Array();
+var strDate=new Array();
+var strHour=new Array();
+var strMin=new Array();
+var strTemp1=new Array();
+var strTemp2=new Array();
+var strTemp3=new Array();
+var strTemp4=new Array();
+var strTemp5=new Array();
+var strTemp6=new Array();
+var strTemp7=new Array();
+var strTemp8=new Array();
+var strAlarm=new Array();	//0-nema alarma; 1-alarm low; 2-alarm high
+var strLista=new Array();
+var intLOWLIMIT=0;
+var intHIGHLIMIT=0;
+var numrows;
+var vLOG= new Array;
+var ch1Name,ch2Name,ch3Name,ch4Name,ch5Name,ch6Name,ch7Name,ch8Name;
+var LOW1,LOW2,LOW3,LOW4,LOW5,LOW6,LOW7,LOW8;
+var HIGH1,HIGH2,HIGH3,HIGH4,HIGH5,HIGH6,HIGH7,HIGH8;
+var cnt,numfiles;
+var brojkanala,kanal1,kanal2,kanal3,kanal4,kanal5,kanal6,kanal7,kanal8;
+var tlink,tmonth,tyear,tsort;
+var oldyear;
+var tlog  = new Array();
+var doc = new jsPDF();
+var firstpage=0;
+
+
+function sortIndex(a,b)
+{return ((a[0] < b[0]) ? -1 : ((a[0] > b[0]) ? 1 : 0));}
+
+function retmonth(mnum)
+{
+if(mnum===1) return "Siječanj";
+else if(mnum===2) return "Veljača";
+else if(mnum===3) return "Ožujak";
+else if(mnum===4) return "Travanj";
+else if(mnum===5) return "Svibanj";
+else if(mnum===6) return "Lipanj";
+else if(mnum===7) return "Srpanj";
+else if(mnum===8) return "Kolovoz";
+else if(mnum===9) return "Rujan";
+else if(mnum===10) return "Listopad";
+else if(mnum===11) return "Studeni";
+else if(mnum===12) return "Prosinac";
+}
+
+function OnLoad()
+{
+$('#chart_div').hide();
+loadData();
+}
+
+//*************************************************
+function loadData()
+//*************************************************
+{
+var fname;
+$(document).ready(function(){
+    $.ajax({
+        type: "GET",
+		url: "haccp.xml?sid="+Math.random(),
+        dataType: "xml",
+        cache: false,
+            success: function(xml){
+                $(xml).find('SENZOR').each(function(index){
+                    ch1Name=$(this).find('SEN1').text();
+                    $("#Sen1").find('span')[1].innerHTML = ch1Name;
+                    ch2Name=$(this).find('SEN2').text();
+                    $("#Sen2").find('span')[1].innerHTML = ch2Name;
+                    ch3Name=$(this).find('SEN3').text();
+                    $("#Sen3").find('span')[1].innerHTML = ch3Name;
+                    ch4Name=$(this).find('SEN4').text();
+                    $("#Sen4").find('span')[1].innerHTML = ch4Name;
+                    ch5Name=$(this).find('SEN5').text();
+                    $("#Sen5").find('span')[1].innerHTML = ch5Name;
+                    ch6Name=$(this).find('SEN6').text();
+                    $("#Sen6").find('span')[1].innerHTML = ch6Name;
+                    ch7Name=$(this).find('SEN7').text();
+                    $("#Sen7").find('span')[1].innerHTML = ch7Name;
+                    ch8Name=$(this).find('SEN8').text();
+                    $("#Sen8").find('span')[1].innerHTML = ch8Name;
+                          
+                     });
+                    numfiles=0;
+                    $(xml).find('LF').each(function(index){
+                        numfiles++;
+                        tlink=$(this).find('LOG').text();
+                        tmonth=Number(tlink.substring(1,3));
+                        tyear=Number(tlink.substring(3,5))+2000;
+                        tsort=tyear*12+tmonth; //broj mjeseci za sortiranje
+                        tlog.push([tsort,tmonth,tyear,tlink]);
+                    });
+                tlog.sort(sortIndex);
+                oldeyear=0;
+                $('#lista').empty();
+                for(cnt=0;cnt<numfiles;cnt++)
+                    {
+                    misec=retmonth(tlog[cnt][1]);
+                    if(oldyear!=tlog[cnt][2]) 
+                        {
+                        if(oldyear!=0)
+                            strLista=strLista+'</div>';
+						fname=tlog[cnt][3];
+						strLista=strLista+'<p class="menu_head">'+tlog[cnt][2]+'</p><div class="menu_body"><a href="#" onclick=loadGraph("'+fname+'")>'+misec+'</a>';
+                        oldyear=tlog[cnt][2];
+                        }
+                    else
+                        {
+                        fname=tlog[cnt][3];//strLista=strLista+'<a href="'+tlog[cnt][3]+'">'+misec+'</a>';
+						strLista=strLista+'<a href="#" onclick=loadGraph("'+fname+'")>'+misec+'</a>';
+						}
+                    } 
+                strLista=strLista+'</div>';
+                $('#lista').empty();
+                $('#lista').html(strLista);
+                $("#lista p.menu_head").mouseover(function()
+                    {
+                    $(this).addClass("menu_head").next("div.menu_body").slideDown(500).siblings("div.menu_body").slideUp("slow");
+					$(this).siblings().css({backgroundImage:"url(crta3.png)"});
+                    });
+            }
+        });
+    });
+}/***** loadData() *****/
+
+//*************************************************
+function prikazi(kanal, strpdf)
+//*************************************************
+{
+    var cnt,y;
+    var razmak=6;
+    var vstart=50;
+    if(firstpage===0)
+		firstpage=1;
+	else
+		doc.addPage();
+	doc.setLineWidth(0.5);
+	//****** H E A D E R    
+	doc.line(20, 5, 200, 5);
+	doc.line(20, 15, 200, 15);
+	doc.line(20,5, 20,15);
+	doc.line(50,5, 50,15);
+	doc.line(200,5, 200,15);
+	doc.setFontSize(20);
+	doc.setFontType("bolditalic");
+    doc.text(22,12,"LARUS");
+	doc.text(90,12,"Webthermo");
+	doc.setFontSize(16);
+    doc.setFontType("normal");
+	doc.text(35,30,"EVIDENCIJA TEMPERATURE U RASHLADNIM UREDJAJIMA");
+	doc.setFontSize(18);
+    doc.setFontType("bold");
+	if(kanal==1)		doc.text(20,45,ch1Name);
+	else if(kanal==2)		doc.text(20,45,ch2Name);
+	else if(kanal==3)		doc.text(20,45,ch3Name);
+	else if(kanal==4)		doc.text(20,45,ch4Name);
+	else if(kanal==5)		doc.text(20,45,ch5Name);
+	else if(kanal==6)		doc.text(20,45,ch6Name);
+	else if(kanal==7)		doc.text(20,45,ch7Name);
+	else if(kanal==8)		doc.text(20,45,ch8Name);
+	var misec=strMonth[0]+1;
+	var strdatum=misec+" / "+strYear[0];
+	doc.text(172,45,strdatum);
+	//-----------------------
+    for(cnt=0;cnt<33;cnt++)
+	{//horizontalne crte
+	y=vstart+(cnt*razmak);
+	doc.line(20, y, 200, y);
+	} 
+    //vertikalne crte
+    doc.line(20,vstart, 20,vstart+(razmak*32));
+    doc.line(40,vstart, 40,vstart+(razmak*32));
+    doc.line(60,vstart, 60,vstart+(razmak*32));
+    doc.line(80,vstart, 80,vstart+(razmak*32));
+    doc.line(100,vstart, 100,vstart+(razmak*32));
+    doc.line(120,vstart, 120,vstart+(razmak*32));
+    doc.line(140,vstart, 140,vstart+(razmak*32)); 
+    doc.line(200,vstart, 200,vstart+(razmak*32));
+    //Ispis datuma
+    doc.setFontSize(10);
+    doc.setFontType("bold");
+    doc.text(25,vstart+razmak-2,"Datum");
+    doc.text(46,vstart+razmak-2,"6:00");
+    doc.text(65,vstart+razmak-2,"10:00");
+    doc.text(85,vstart+razmak-2,"14:00");
+    doc.text(105,vstart+razmak-2,"18:00");
+    doc.text(125,vstart+razmak-2,"22:00");
+    doc.text(165,vstart+razmak-2,"Komentar");
+    doc.setFontSize(8);
+    doc.setFontType("normal");
+    for(cnt=2;cnt<33;cnt++)//ISPIS DATIUMA OD 1-31
+		{//datumi 1-31, preskače prva dva reda
+		y=vstart+((cnt-1)*razmak)+4;
+		str = (cnt-1).toString(); 
+		doc.text(30,y,str);
+		} 
+    doc.setFontSize(10);
+    doc.setFontType("normal");
+	for(var i=0;i<numrows;i++)
+		{
+		cnt=parseInt(strDate[i]);
+		var sat=parseInt(strHour[i]);
+		if(sat===6) 
+			var hpomak=46;
+		else if(sat===10) 
+			hpomak=65; 
+		else if(sat===14) 
+			hpomak=85;
+		else if(sat===18) 
+			hpomak=105;
+		else if(sat===22) 
+			hpomak=125;
+		else
+			hpomak=160;
+		y=vstart+((cnt)*razmak)+4;
+		var prstr=strpdf[i].toString();
+		if(prstr==="NaN")
+			prstr="-";
+		doc.text(hpomak,y,prstr);
+		//doc.text(hpomak,y,"jure");
+		}
+	//****** F O O T E R    
+	doc.line(20, 280, 200,280);
+	doc.setFontSize(8);
+    doc.setFontType("normal");
+	doc.text(93,283,"www.larus.com.hr");
+	
+	//-----------------------
+    
+    
+}/***** prikazi() *****/
+
+
+
+//*************************************************
+function loadGraph(trow)
+//*************************************************
+{
+var i,j;
+var width,height;
+var tmp=new Array();
+var csvdata=new Array();
+var jure=new Array();
+/*********provjera da li je označen barem jedan kanal ***********/
+brojkanala=0;
+if( ($("#Sen1").val())===true)	brojkanala++;
+if( ($("#Sen2").val())===true)	brojkanala++;
+if( ($("#Sen3").val())===true)	brojkanala++;
+if( ($("#Sen4").val())===true)	brojkanala++;
+if( ($("#Sen5").val())===true)	brojkanala++;
+if( ($("#Sen6").val())===true)	brojkanala++;
+if( ($("#Sen7").val())===true)	brojkanala++;
+if( ($("#Sen8").val())===true)	brojkanala++;
+if(brojkanala==0)
+	{
+	alert("Potrebno je selektirati barem jedan senzor");
+	return;
+	}
+	
+var vName="FNAME"+trow;
+$('#lista').hide();
+$('#radio').hide();
+//$('#chart_div').show();
+$(document).ready(function(){
+   //var Kota=$("#"+vName).text();
+   //var Kota=trow+"?sid="+Math.random();
+       var Kota=trow;
+   $.get(Kota, function(data) {
+        var len = data.length;
+        j=0;
+        for (i = 0; i < len; i++) {
+                if (data[i] == "\r") 
+                        tmp[j++] = ';TAG;'
+                else if (data[i] == ":") 
+                        tmp[j++] = ';'
+                else if (data[i] != "\n") 
+                                tmp[j++] = data[i];
+        }
+        len = tmp.length;
+        for (i = 0; i < len; i++)
+                jure = jure+tmp[i];
+        var csvdata = String(jure).split(';');	
+        //var numrows=(csvdata.length-13)/8;
+        var firsttag=0;
+        numrows=0;
+        for (i = 0; i < csvdata.length-6; i++) {
+            if(csvdata[i]=="TAG")	
+               {//nasao pocetak reda
+            if(firsttag==0)
+                firsttag=1;	//preskace prvi red sa zaglavljem
+            else
+                {						
+                strYear[numrows]=csvdata[3];
+                strMonth[numrows]=csvdata[1]-1;
+                strDate[numrows]=csvdata[i+1];
+                strHour[numrows]=csvdata[i+2];
+                strMin[numrows]=csvdata[i+3];
+                var tstr=csvdata[i+5];
+                tstr=tstr.replace(",", ".");
+                strTemp1[numrows]=parseFloat(tstr);
+                var tstr=csvdata[i+6];
+                tstr=tstr.replace(",", ".");
+                strTemp2[numrows]=parseFloat(tstr);
+                var tstr=csvdata[i+7];
+                tstr=tstr.replace(",", ".");
+                strTemp3[numrows]=parseFloat(tstr);  
+                var tstr=csvdata[i+8];
+                tstr=tstr.replace(",", ".");
+                strTemp4[numrows]=parseFloat(tstr); 
+                var tstr=csvdata[i+9];
+                tstr=tstr.replace(",", ".");
+                strTemp5[numrows]=parseFloat(tstr);
+                var tstr=csvdata[i+10];
+                tstr=tstr.replace(",", ".");
+                strTemp6[numrows]=parseFloat(tstr);
+                var tstr=csvdata[i+11];
+                tstr=tstr.replace(",", ".");
+                strTemp7[numrows]=parseFloat(tstr);  
+                var tstr=csvdata[i+12];
+                tstr=tstr.replace(",", ".");
+                strTemp8[numrows]=parseFloat(tstr); 
+                numrows++;
+                }
+            }
+        }
+
+/*********** kreiranje PDF-a ********************/	
+        if( ($("#Sen1").val())===true)
+            prikazi(1,strTemp1);
+        if( ($("#Sen2").val())===true)
+            prikazi(2,strTemp2);
+        if( ($("#Sen3").val())===true)
+            prikazi(3,strTemp3);
+        if( ($("#Sen4").val())===true)
+            prikazi(4,strTemp4);
+        if( ($("#Sen5").val())===true)
+            prikazi(5,strTemp5);
+        if( ($("#Sen6").val())===true)
+            prikazi(6,strTemp6);
+        if( ($("#Sen7").val())===true)
+            prikazi(7,strTemp7);
+        if( ($("#Sen8").val())===true)
+            prikazi(8,strTemp8);
+		doc.output('datauri');		
+        });
+     $('.cbox').change(function() {
+          prikazi();doc.output('datauri');
+		;
+});
+	});
+}/***** loadCode() *****/
+
+
+
+
+</script>
+</head>
+<body class="backcolor" onLoad="OnLoad()" >
+<div id='content'>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadmenu();
+            //$("#refresh").jqxButton({ width: '150',height: '25px'});
+            //$('#refresh').on('click', function () {prikazi();});
+            $("#Sen1").jqxCheckBox({width: '100px',height: 25,checked:true});
+            $('#Sen1').on('checked', function (event) {kanal1=true;});
+            $('#Sen1').on('unchecked', function (event) {kanal1=false;});            
+            $("#Sen2").jqxCheckBox({width: '100px',height: 25,checked:false});
+            $('#Sen2').on('checked', function (event) {kanal2=true;});
+            $('#Sen2').on('unchecked', function (event) {kanal2=false;});            
+            $("#Sen3").jqxCheckBox({width: '100px',height: 25,checked:false});
+            $('#Sen3').on('checked', function (event) {kanal3=true;});
+            $('#Sen3').on('unchecked', function (event) {kanal3=false;});  
+            $("#Sen4").jqxCheckBox({width: '100px',height: 25,checked:false});
+            $('#Sen4').on('checked', function (event) {kanal4=true;});
+            $('#Sen4').on('unchecked', function (event) {kanal4=false;}); 
+            $("#Sen5").jqxCheckBox({width: '100px',height: 25,checked:true});
+            $('#Sen5').on('checked', function (event) {kanal5=true;});
+            $('#Sen5').on('unchecked', function (event) {kanal5=false;});            
+            $("#Sen6").jqxCheckBox({width: '100px',height: 25,checked:false});
+            $('#Sen6').on('checked', function (event) {kanal6=true;});
+            $('#Sen6').on('unchecked', function (event) {kanal6=false;});            
+            $("#Sen7").jqxCheckBox({width: '100px',height: 25,checked:false});
+            $('#Sen7').on('checked', function (event) {kanal7=true;});
+            $('#Sen7').on('unchecked', function (event) {kanal7=false;});  
+            $("#Sen8").jqxCheckBox({width: '100px',height: 25,checked:false});
+            $('#Sen8').on('checked', function (event) {kanal8=true;});
+            $('#Sen8').on('unchecked', function (event) {kanal8=false;});             
+           });            
+
+    </script>
+    <div class="logo_row">
+        <div class="logo_left"><img src="logot.gif" /></div>
+       <div class="logo_center"><h2 class="webenergy">WEBTERMO</h2></div>
+        <div class="logo_right"></div>
+    </div>
+    <div id='jqxMenu'></div>
+    <div style="height:50px;" ></div>
+    <div align="center">
+        <table border="0" cellspacing="0" cellpadding="0" >
+ 
+                <td><table border="0" cellspacing="0" cellpadding="0" >
+          <tr>
+        <td><div id='Sen1'><span>Sensor 1</span></div></td>
+        <td><div id='Sen2'><span>Sensor 2</span></div></td>
+        <td><div id='Sen3'><span>Sensor 3</span></div></td>
+        <td><div id='Sen4'><span>Sensor 4</span> </div></td>
+        <td><div id='Sen5'><span>Sensor 5</span></div></td>
+        <td><div id='Sen6'><span>Sensor 6</span></div></td>
+        <td><div id='Sen7'><span>Sensor 7</span></div></td>
+        <td><div id='Sen8'><span>Sensor 8</span></div></td>        
+    </table>    
+ </td>
+</table>
+</div>
+    <div id="xspace" align="right" style='width: 1000px;height: 20px; '> </div>
+<div>  
+
+    <div  id="gaugesat" class="instrument_right"></div>
+    <div id="chart_div"></div>
+</div>
+<div id="lista" align="center" class="menu_list"></div>    
+</body>
+</html>
+

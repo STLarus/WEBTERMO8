@@ -1,0 +1,88 @@
+<html>
+<head>
+<!DOCTYPE html>     
+    <title >Evid</title>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="pass.js"></script>
+
+<link rel="stylesheet" href="jqxbase.css" type="text/css" />
+<link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+<link rel="stylesheet" href="still.css" type="text/css" />
+<script type="text/javascript" src="jqx_all.js"></script>
+<script type="text/javascript" src="pass.js"></script>  
+<script type="text/javascript">
+
+
+//*************************************************
+function SendData()
+//*************************************************
+{
+xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
+xmlDocument+="<BOOT>";
+xmlDocument+="<RESTART>RESET</RESTART>";
+xmlDocument+="</BOOT>";
+$.ajax({ 
+	url: "boot.sva"+getstring(),  
+	type: "POST", 
+	contentType: "text/xml", 
+	processData: false, 
+	data: xmlDocument, 
+	success: function(){alert('Podaci spremljeni');},
+  	error: function(){alert('Greska');}
+	});
+}/***** SendData() *****/
+
+
+</script>
+
+<style type="text/css">
+<!--
+body,td,th {
+	font-family: arial;
+	color: #000;
+	font-size: 14px;
+}
+body {
+	background-color: #FFF;
+}
+.naslov_stranice table tr td font strong {
+	text-align: left;
+}
+.naslov_stranice table {
+	text-align: left;
+}
+-->
+</style></head>
+
+<body class="naslov_stranice">
+<div id='content'>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //loadmenu();
+             $("#Spremi").jqxButton({ width: '100',height: '25px'});
+            $('#Spremi').on('click', function () {SendData();});
+             });
+    </script>
+   <div class="logo_center"><img src="logot.gif" /></div>
+<div style="height:40px" ></div>  
+<div id='jqxMenu' class="div_left"></div>
+</div>	      
+<table width="395" border="0" align="center">
+  <tr>
+    <td><div align="center">
+    <font color="#BF1616" ><strong>Prebaci kontroler u bootloader mod</strong></font>
+    </div></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+<table width="179" border="0" align="center">
+  <tr>
+    <td width="173"><div align="center">
+      <input type="button" value="Bootloader" id="Spremi" />
+    </div></td>
+  </tr>
+</table>
+</html>
+
+

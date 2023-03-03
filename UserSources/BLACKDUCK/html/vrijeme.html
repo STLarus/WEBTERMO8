@@ -1,0 +1,349 @@
+<html>
+<head>
+<link rel="stylesheet" href="jqxbase.css" type="text/css" />
+<link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+<link rel="stylesheet" href="still.css" type="text/css" />
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="demos.js"></script>
+<script type="text/javascript" src="jqx_all.js"></script>
+<script type="text/javascript" src="pass.js"></script>
+<script type="text/javascript">
+
+
+function OnLoad()
+{
+loadSNTP();
+setInterval("loadSTMTime()", 1000);
+setInterval("loadSystemTime()", 1000);
+}
+function testdst()
+{
+if( ($("#dst").val())===true)
+    {
+    $("#dst_state").show();
+        }
+else
+    {
+    $("#dst_state").hide();
+    }
+ }
+ 
+ function testsntp()
+{
+if( ($("#cbt").val())===true)
+    {
+        $("#SNTP1").fadeIn("slow");
+         $("#SNTP2").fadeIn("slow");
+         $("#select2").fadeIn("slow");
+     }
+else
+    {
+         $("#SNTP1").fadeOut( "slow" );
+          $("#SNTP2").fadeOut( "slow" );
+          $("#select2").fadeOut( "slow" );
+     }
+ }
+//*************************************************
+function loadSTMTime()
+//*************************************************
+{
+$(document).ready(function(){
+    $.ajax({
+        type: "GET",
+        url: "time.xml?sid="+Math.random(),
+        dataType: "xml",
+        cache: false,
+        success: function(xml){
+            $(xml).find('TIME').each(function(){	
+                var sHOUR=$(this).find('HOUR').text(); 
+                var sMIN=$(this).find('MIN').text(); 
+                var sSEC=$(this).find('SEC').text(); 
+                var sDATE=$(this).find('DATE').text(); 
+                var sMONTH=$(this).find('MONTH').text();
+                var sYEAR=$(this).find('YEAR').text();
+                $("#modTime").val(sDATE+'.'+sMONTH+'.'+sYEAR+'   |    '+sHOUR+':'+sMIN+':'+sSEC); 
+                });
+            }
+        });
+    });
+}/***** loadXMLTime() *****/
+
+//*************************************************
+function loadSNTP()
+//*************************************************
+{
+$(document).ready(function(){
+    $.ajax({
+        type: "GET",
+        url: "sntp.xml?sid="+Math.random(),
+        dataType: "xml",
+        cache: false,
+        success: function(xml){
+            $(xml).find('SNTP').each(function(){	
+                var vSENAB=$(this).find('SENAB').text(); 
+                if (vSENAB == "ON")
+                    $("#cbt").val(true);
+                else 
+                    $("#cbt").val(false);	
+                $("#SNTP1").val($(this).find('SNTP1').text()); 
+                $("#SNTP2").val($(this).find('SNTP2').text()); 			
+                $("#select2").val($(this).find('ZONA').text()); 
+                var vDST=$(this).find('DST').text(); 
+                if (vDST == "ON")
+                    {
+                    $("#dst").val(true);
+                    $("#dst_state").show();
+                    }
+                else
+                    {
+                    $("#dst").val(false);
+                    $("#dst_state").hide();
+                    }
+
+                var vDSTSTATE=$(this).find('DSTSTATE').text(); 
+                if(vDSTSTATE==1)
+                    $("#dst_state").val('LJETNO'); 
+                else
+                    $("#dst_state").val('ZIMSKO'); 
+                testdst();
+                });
+            }
+        });
+    });
+}/***** loadSNTP() *****/
+
+//*************************************************
+function SendTime()
+//*************************************************
+{
+var vSNTP,vZona,vPeriod;
+var xmlDocument;
+var cTime = new Date();
+month=cTime.getMonth()+1;
+//trebalo bi ispitati da li je donja graniï¿½na vrijednost manja od gornje	     
+xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
+xmlDocument+="<TIME>";
+xmlDocument+="<DAY>"+cTime.getDay()+"</DAY>";
+xmlDocument+="<HOUR>"+cTime.getHours()+"</HOUR>";
+xmlDocument+="<MIN>"+cTime.getMinutes()+"</MIN>";
+xmlDocument+="<SEC>"+cTime.getSeconds()+"</SEC>";
+xmlDocument+="<DATE>"+cTime.getDate()+"</DATE>";
+xmlDocument+="<MONTH>"+month+"</MONTH>";
+xmlDocument+="<YEAR>"+cTime.getFullYear()+"</YEAR>";
+xmlDocument+="</TIME>";
+
+$.ajax({ 
+	url: "savetime.sva"+getstring(), 
+	type: "POST", 
+	contentType: "text/xml", 
+	processData: false, 
+	data: xmlDocument, 
+	success: function(){alert('Vrijeme podeseno');},
+  	error: function(){alert('Greska');}
+	});
+}/***** SendTime() *****/
+
+//*************************************************
+function SendSNTP()
+//*************************************************
+{
+var vSNTP,vZona,vPeriod;
+var xmlDocument;
+var cTime = new Date();
+month=cTime.getMonth()+1;
+vSNTP=parseInt($("#select1").val());
+vZona=parseInt($("#select2").val());
+if( ($("#cbt").val())===true)	
+	var chkENABLE="ON";
+else	
+	var chkENABLE="OFF";
+if( ($("#dst").val())===true)	
+	var chkDST="ON";
+else	
+	var chkDST="OFF";
+//trebalo bi ispitati da li je donja graniï¿½na vrijednost manja od gornje	     
+xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
+xmlDocument+="<SNTP>";
+xmlDocument+="<SENAB>"+chkENABLE+"</SENAB>";
+xmlDocument+="<ZONA>"+vZona+"</ZONA>";
+xmlDocument+="<SNTP1>"+$("#SNTP1").val()+"</SNTP1>";
+xmlDocument+="<SNTP2>"+$("#SNTP2").val()+"</SNTP2>";
+xmlDocument+="<DST>"+chkDST+"</DST>";
+xmlDocument+="</SNTP>";
+$.ajax({ 
+	url: "savesntp.sva"+getstring(), 
+	type: "POST", 
+	contentType: "text/xml", 
+	processData: false, 
+	data: xmlDocument, 
+	success: function(){alert('Vrijeme podeseno');},
+  	error: function(){alert('Greska');}
+	});
+}/***** SendSNTP() *****/
+
+//*************************************************
+function SendTest()
+//*************************************************
+{
+var xmlDocument;
+xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
+xmlDocument+="<TESTSNTP>";
+xmlDocument+="<TEST>sinhro</TEST>";
+xmlDocument+="</TESTSNTP>";
+$.ajax({ 
+	url: "testsntp.sva"+getstring(),
+	type: "POST", 
+	contentType: "text/xml", 
+	processData: false, 
+	data: xmlDocument, 
+	success: function(){alert('Sinhro SNTP ');},
+  	error: function(){alert('Greska');}
+	});
+}/***** SendTest() *****/
+
+//*************************************************
+function loadSystemTime()
+//*************************************************
+{
+var setStr;
+var month;
+var cTime = new Date();
+var month=cTime.getMonth()+1;
+setStr=cTime.getDate()+".";
+setStr=setStr+month+".";
+setStr=setStr+cTime.getFullYear()+"    |    ";
+setStr=setStr+cTime.getHours()+":";
+setStr=setStr+cTime.getMinutes()+":";
+setStr=setStr+cTime.getSeconds();
+$("#wTIME").val(setStr);
+}
+/***** LoadTime() *****/
+
+</script>
+</head>
+
+<body onLoad="OnLoad()" >
+<div id='content'>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadmenu();
+            $("#cbt").jqxCheckBox({ width: 60, height: 25}); 
+            $('#cbt').on('change', function (event) {testsntp();});
+            $("#dst").jqxCheckBox({ width: 60, height: 25});
+            $('#dst').on('change', function (event) {testdst();});
+             $("#Spremi").jqxButton({ width: '150',height: '25px'});
+             $('#Spremi').on('click', function () {SendSNTP();});
+             $("#Sinhroniziraj").jqxButton({ width: '150',height: '25px'});
+             $('#Sinhroniziraj').on('click', function () {SendTest();});  
+             $("#Podesi").jqxButton({ width: '150',height: '25px'});
+             $('#Podesi').on('click', function () {SendTime();});                          
+        });
+    </script>
+    
+    <div class="logo_row">
+        <div class="logo_left"><img src="logot.gif" /></div>
+       <div class="logo_center"><h2 class="webenergy">WEBTERMO</h2></div>
+        <div class="logo_right"></div>
+    </div>
+    <div id='jqxMenu'></div>
+    <div style="height:40px" ></div>
+</div>	
+<table width="600" border="0" align="center">
+  <tr>
+    <td width="90">&nbsp;</td>
+    <td width="421"><strong><font color="#0000FF"></font></strong></td>
+    <td width="75">&nbsp;</td>
+  </tr>
+</table>
+<table width="600" border="0" align="center">
+     <tr>
+    <td width="200" ><font color="#000000"><strong>SNTP Servis:</strong></font></td>
+     <td width="400"><div id='cbt'  style='margin-top: 7px;'>Omoguæi</div></td>
+  </tr>
+  <tr>
+      <td > <font color="#000000"><strong>SNTP Server 1:</strong></font></td>
+    <td   ><input id="SNTP1" name="SNTP1" type="text" class="ivo1" size="40" maxlength="31" /></td>
+
+    </tr>
+  <tr>
+  <tr>
+    <td width="157" ><font color="#000000"><strong>SNTP Server 2:</strong></font></td>
+    <td width="126"  ><input id="SNTP2" name="SNTP2" type="text" class="ivo1" size="40" maxlength="31" /></td>
+  </tr>
+  <tr>
+    <td ><font color="#000000"><strong>Vremenska zona :</strong></font></td>
+   <td> <select name="select2" id="select2">
+         <option value="32">UTC-12:00</option>
+         <option value="31">UTC-11:00</option>
+         <option value="30">UTC-10:00</option>
+         <option value="29">UTC-09:00</option>
+         <option value="28">UTC-08:00</option>
+         <option value="27">UTC-07:00</option>
+         <option value="26">UTC-06:00</option>
+         <option value="25">UTC-05:00</option>
+         <option value="24">UTC-04:00</option>
+         <option value="23">UTC-03:00</option>
+         <option value="22">UTC-02:00</option>
+         <option value="21">UTC-01:00</option>
+         <option selected value="0">UTC</option>
+         <option value="1">UTC+01:00</option>
+         <option value="2">UTC+02:00</option>
+         <option value="3">UTC+03:00</option>
+         <option value="4">UTC+04:00</option>           
+         <option value="5">UTC+05:00</option>
+         <option value="6">UTC+06:00</option>
+         <option value="7">UTC+07:00</option>
+         <option value="8">UTC+08:00</option>           
+         <option value="9">UTC+09:00</option>
+         <option value="10">UTC+10:00</option>
+         <option value="11">UTC+11:00</option>
+         <option value="12">UTC+12:00</option>      
+       </select>
+    </td>
+         
+    <td>&nbsp;</td>
+    </tr>
+     <tr>
+       <td><font color="#000000"><strong>Ljetno / zimsko vrijeme:</strong></font></td>
+       <td width="126"><div id='dst'  style='margin-top: 7px;'>Omoguæi</div></td>
+    </tr> 
+     <tr>
+       <td><font color="#000000"><strong>Status:</strong></font></td>
+       <td><input name="dst_state" type="text" class="ivo1" id="dst_state" value="          " size="20" maxlength="15" readonly /></td>
+    </tr>     
+</table><br />
+<table width="600" border="0" align="center">
+  <tr>
+    <td width="171">&nbsp;</td>
+    <td width="60"><input id="Spremi" type="button" value="Spremi" onClick="SendSNTP()"></td>
+    <td width="87">&nbsp;</td>
+    <td width="231"><input id="Sinhroniziraj" type="button" value="Sinhroniziraj" onClick="SendTest()"></td>
+    <td width="29">&nbsp;</td>
+  </tr>
+</table><br>
+<table width="453" border="0" align="center">
+  <tr>
+    <td width="447"><img src="line.png" width="450" height="1" /></td>
+  </tr>
+</table>
+<br>
+<table width="313" border="0" align="center">
+  <tr>
+    <td width="151" ><strong>Sistemsko vrijeme</strong></td>
+    <td width="152" ><strong>Vrijeme na modulu</strong></td>
+    </tr>
+  <tr>
+    <td ><input id="wTIME" type="text" class="ivo1" size="24" maxlength="24" readonly /></td>
+    <td><input name="modTime" type="text" class="ivo1" size="24" maxlength="24" id="modTime"  readonly /></td>
+    </tr>
+</table><br>
+<table width="300" border="0" align="center">
+  <tr>
+    <td width="86">&nbsp;</td>
+    <td width="176"><input name="Podesi" type="button" id="Podesi" onClick="SendTime()" value="Podesi"/></td>
+    <td width="24">&nbsp;</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+</body>
+</html>

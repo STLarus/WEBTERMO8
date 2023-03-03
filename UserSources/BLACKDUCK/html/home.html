@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Home</title>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="pass.js"></script>
+
+<link rel="stylesheet" href="jqxbase.css" type="text/css" />
+<link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+<link rel="stylesheet" href="still.css" type="text/css" />
+<script type="text/javascript" src="demos.js"></script>
+<script type="text/javascript" src="jqx_all.js"></script>
+ <script type="text/javascript" src="pass.js"></script>  
+
+<script type="text/javascript">
+
+function OnLoad()
+{
+loadStatusi();
+}
+
+var renderText = function (text) {
+    var retval="<span \n\
+        class='jqx-rc-all' \n\
+        style='background: #F1F7FC; \n\
+            color: #720B1C; \n\
+            font-style: italic;\n\
+            font-size:150%;'>" + text + "</span>";
+    return retval;
+    }
+
+//*************************************************
+function loadXMLTime()
+//*************************************************
+{
+$(document).ready(function(){
+    $.ajax({
+        type: "GET",
+        url: "time.xml?sid="+Math.random(),
+        dataType: "xml",
+        cache: false,
+        success: function(xml){
+        $(xml).find('TIME').each(function(){	
+            var sHOUR=$(this).find('HOUR').text(); 
+            var sMIN=$(this).find('MIN').text(); 
+            var sSEC=$(this).find('SEC').text(); 
+            var sDATE=$(this).find('DATE').text(); 
+            var sMONTH=$(this).find('MONTH').text();
+            var sYEAR=$(this).find('YEAR').text();
+            $("#datum").val(sDATE+'.'+sMONTH+'.'+sYEAR+'   |    '+sHOUR+':'+sMIN+':'+sSEC); 
+                });
+            }
+        });
+    });
+}/***** loadXMLTime() *****/
+
+//*************************************************
+function loadStatusi()
+//*************************************************
+{
+$(document).ready(function(){
+            
+  $.ajax({
+        type: "GET",
+        url: "home.xml?sid="+Math.random(),
+        dataType: "xml",
+        cache: false,
+        success: function(xml){
+            $(xml).find('STATUSI').each(function(){
+            dSIZE=$(this).find('SIZE').text();
+            dFREE=$(this).find('FREE').text(); 
+            iSize=parseInt(dSIZE);
+            iFree=parseInt(dFREE);
+            var dwidth=((iSize-iFree)*100/iSize);
+            $("#diskSize").width(dwidth);
+            $("#dfree").val($(this).find('FREE').text());
+            $("#dsize").val($(this).find('SIZE').text());
+            $("#naziv").val($(this).find('NAME').text());
+            $("#verzija").val($(this).find('VERZIJA').text());
+            var sat=$(this).find('HOUR').text();
+            var min=$(this).find('MIN').text();
+            var timestr=sat+" : "+min+" : 00";
+            $("#mtime").val(timestr);
+            $('#progresbar').jqxProgressBar('val', dwidth);
+            setInterval("loadXMLTime()", 5000);
+            $("#ime1").val($(this).find('NAME1').text());
+            $("#ime2").val($(this).find('NAME2').text());
+            $("#ime3").val($(this).find('NAME3').text());
+            $("#ime4").val($(this).find('NAME4').text());
+            $("#ime5").val($(this).find('NAME5').text());
+            $("#ime6").val($(this).find('NAME6').text());
+            $("#ime7").val($(this).find('NAME7').text());
+            $("#ime8").val($(this).find('NAME8').text());        
+            $("#vrije1").val($(this).find('TEMP1').text());
+            $("#vrije2").val($(this).find('TEMP2').text());
+            $("#vrije3").val($(this).find('TEMP3').text());
+            $("#vrije4").val($(this).find('TEMP4').text());
+            $("#vrije5").val($(this).find('TEMP5').text());
+            $("#vrije6").val($(this).find('TEMP6').text());
+            $("#vrije7").val($(this).find('TEMP7').text());
+            $("#vrije8").val($(this).find('TEMP8').text());            
+            $("#stat1").val($(this).find('STAT1').text());	
+            $("#stat2").val($(this).find('STAT2').text());	
+            $("#stat3").val($(this).find('STAT3').text());	
+            $("#stat4").val($(this).find('STAT4').text());
+            $("#stat5").val($(this).find('STAT5').text());	
+            $("#stat6").val($(this).find('STAT6').text());	
+            $("#stat7").val($(this).find('STAT7').text());	
+            $("#stat8").val($(this).find('STAT8').text());    
+            
+                });
+            }
+        });           
+    });
+}/***** loadStatusi() *****/
+
+
+</script>
+
+<style type="text/css">
+<!--
+body,td,th {
+	font-family: arial;
+	color: #FFF;
+	font-size: 14px;
+}
+body {
+	background-color: #FFF;
+}
+-->
+</style></head>
+
+<body  class="backcolor" onload="OnLoad();" >
+<div id='content'>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadmenu();
+            $("#progresbar").jqxProgressBar({value: 18,width: 300,height: 25,showText:true});
+            $("#progresbar").jqxProgressBar({ renderText: renderText });
+             });
+    </script>
+    <div class="logo_row">
+        <div class="logo_left"><img src="logot.gif" /></div>
+       <div class="logo_center"><h2 class="webenergy">WEBTERMO</h2></div>
+        <div class="logo_right"></div>
+    </div>
+    <div id='jqxMenu'></div>
+    <div style="height:40px" ></div>
+</div>	
+
+ <div > 
+     <div  class="centerDiv" id="progresbar"></div>	   
+ </div>
+
+<p>&nbsp</p> 
+ <div align="center" class="div_font_hd2">Status </div>
+
+<table  border="0" align="center">
+<tr>
+    <td width="79"><font color="#333333"><strong>Disk (kB):</strong></font>  </td>
+    <td width="144"><label>
+      <input type="text" name="naziv" id="dsize" readonly="readonly" />
+    </label></td>
+  </tr>    
+<tr>
+    <td width="79"><font color="#333333"><strong>Free (kB):</strong></font>  </td>
+    <td width="144"><label>
+      <input type="text" name="naziv" id="dfree" readonly="readonly" />
+    </label></td>
+  </tr>    
+  <tr>
+    <td width="79"><font color="#333333"><strong>Naziv :</strong></font>  </td>
+    <td width="144"><label>
+      <input type="text" name="naziv" id="naziv" readonly="readonly" />
+    </label></td>
+  </tr>
+</table>
+<table  border="0" align="center">
+  <tr>
+    <td width="79"><font color="#333333"><strong>Datum :</strong></font> </td>
+    <td width="144"><input type="text" name="datum" id="datum" readonly="readonly"/></td>
+  </tr>
+</table>
+<table  border="0" align="center">
+  <tr>
+    <td width="79"><font color="#333333"><strong>Verzija :</strong></font> </td>
+    <td width="144"><input type="text" name="verzija" id="verzija" readonly="readonly"/></td>
+  </tr>
+</table>
+<table  border="0" align="center">
+  
+</table>    
+<p>&nbsp</p> 
+ 
+ 
+ <table width="382" border="0" align="center">
+  <tr>
+    <td width="120" align="center" ><strong><font color="#004a73">STATUS</font></strong></td>
+    <td width="120" align="center" ><strong><font color="#004a73">NAZIV</font></strong></td>
+    <td width="120" align="center" ><strong><font color="#004a73">TEMPERATURA [C]</font></strong></td>
+    </tr>
+  <tr>
+    <td align="center" bgcolor="#FFFFFF"><input name="stat1" type="text" id="stat1" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="ime1" type="text" id="ime1" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="vrije1" type="text" id="vrije1" size="20" /></td>
+  </tr>
+  <tr>
+    <td align="center" bgcolor="#FFFFFF"><input name="stat2" type="text" id="stat2" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="ime2" type="text" id="ime2" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="vrije2" type="text" id="vrije2" size="20" /></td>
+  </tr>
+  <tr>
+    <td align="center" bgcolor="#FFFFFF"><input name="stat3" type="text" id="stat3" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="ime3" type="text" id="ime3" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="vrije3" type="text" id="vrije3" size="20" /></td>
+  </tr>
+  <tr>
+    <td align="center" bgcolor="#FFFFFF"><input name="stat4" type="text" id="stat4" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="ime4" type="text" id="ime4" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="vrije4" type="text" id="vrije4" size="20" /></td>
+  </tr>
+  <tr>
+    <td align="center" bgcolor="#FFFFFF"><input name="stat5" type="text" id="stat5" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="ime5" type="text" id="ime5" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="vrije5" type="text" id="vrije5" size="20" /></td>
+  </tr>
+  <tr>
+    <td align="center" bgcolor="#FFFFFF"><input name="stat6" type="text" id="stat6" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="ime6" type="text" id="ime6" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="vrije6" type="text" id="vrije6" size="20" /></td>
+  </tr>
+  <tr>
+    <td align="center" bgcolor="#FFFFFF"><input name="stat7" type="text" id="stat7" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="ime7" type="text" id="ime7" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="vrije7" type="text" id="vrije7" size="20" /></td>
+  </tr>
+  <tr>
+    <td align="center" bgcolor="#FFFFFF"><input name="stat8" type="text" id="stat8" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="ime8" type="text" id="ime8" size="20" /></td>
+    <td align="center" bgcolor="#FFFFFF"><input name="vrije8" type="text" id="vrije8" size="20" /></td>
+  </tr>     
+</table>
+ 
+ 
+</form>
+</body>
+</html>
+

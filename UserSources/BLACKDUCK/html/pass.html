@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Home</title>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="pass.js"></script>
+
+<link rel="stylesheet" href="jqxbase.css" type="text/css" />
+<link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+<link rel="stylesheet" href="still.css" type="text/css" />
+<script type="text/javascript" src="demos.js"></script>
+<script type="text/javascript" src="jqx_all.js"></script>
+<script type="text/javascript" src="pass.js"></script>  
+<script language="javascript">
+
+
+//*************************************************
+function SendData()
+//*************************************************
+{
+var p1="";
+var p2="";
+var uname="";
+p1=$("#pass1").val();
+p2=$("#pass2").val();
+uname=$("#uname").val();
+if(p1==p2)
+	{
+	p1=base64_encode (p1);
+	uname=base64_encode (uname);
+	}
+else
+	{
+	$("#pass1").val("");
+	$("#pass2").val("");
+	$("#uname").val("");
+	alert("Neispravna lozinka");
+	return;
+	}
+xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
+xmlDocument+="<LOGIN>";
+xmlDocument+="<PASS>"+p1+"</PASS>";
+xmlDocument+="<UNAME>"+uname+"</UNAME>";
+xmlDocument+="</LOGIN>";
+$.ajax({ 
+	url: "pass.sva"+getstring(),  
+	type: "POST", 
+	contentType: "text/xml", 
+	processData: false, 
+	data: xmlDocument, 
+	//error:function(xhr,err,e){ alert( "Error: " + err ); }
+	success: function(){alert('Podaci spremljeni');},
+  	error: function(){alert('Greska');}
+	});
+}/***** SendData() *****/
+
+
+</script>
+
+<style type="text/css">
+<!--
+body,td,th {
+	font-family: arial;
+	color: #000;
+	font-size: 14px;
+}
+body {
+	background-color: #FFF;
+}
+.naslov_stranice table tr td font strong {
+	text-align: left;
+}
+.naslov_stranice table {
+	text-align: left;
+}
+-->
+</style></head>
+
+<body onload="OnLoad()" class="naslov_stranice">
+<div id='content'>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadmenu();
+            $("#spremi").jqxButton({ width: '150',height: '25px'});
+            $('#spremi').on('click', function () {SendData();});;                 
+             });
+    </script>
+    <div class="logo_row">
+        <div class="logo_left"><img src="logot.gif" /></div>
+       <div class="logo_center"><h2 class="webenergy">WEBTERMO</h2></div>
+        <div class="logo_right"></div>
+    </div>
+    <div id='jqxMenu'></div>
+    <div style="height:40px" ></div>
+</div>	    
+<br>
+<table width="395" border="0" align="center">
+  <tr>
+    <td><div align="center">
+    <font color="#0000FF" ><strong>Izmjena lozinke</strong></font>
+    </div></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table width="399" border="0" align="center">
+  <tr>
+    <td width="217"><strong><font color="#">Korisničko ime:</font></strong></td>
+    <td width="223"><label>
+      <input type="text" name="uname" id="uname" />
+    </label></td>
+  </tr>
+  <tr>
+    <td><strong>Nova lozinka:</strong></td>
+    <td><input type="password" name="pass1" id="pass1" /></td>
+  </tr>
+  <tr>
+    <td><strong>Nova lozinka (ponovo) :</strong></td>
+    <td><input type="password" name="pass2" id="pass2" /></td>
+  </tr>
+   </table>
+<p>&nbsp;</p>
+<table width="56" border="0" align="center">
+    <tr>
+      <td width="50"><input type="button" value="Spremi" id="spremi" /></td></td>
+    </tr>
+  </table>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><br>
+</p>

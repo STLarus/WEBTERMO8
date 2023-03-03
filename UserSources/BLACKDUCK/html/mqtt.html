@@ -1,0 +1,370 @@
+<h1></h1><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Senzor1</title>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="pass.js"></script>
+
+<link rel="stylesheet" href="jqxbase.css" type="text/css" />
+<link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+<link rel="stylesheet" href="still.css" type="text/css" />
+<script type="text/javascript" src="demos.js"></script>
+<script type="text/javascript" src="jqx_all.js"></script>
+<script type="text/javascript" src="jqxdata.js"></script>
+<script type="text/javascript" src="jqxrangeselector.js"></script>
+ <script type="text/javascript" src="pass.js"></script>  
+<script language="javascript">
+
+
+var idcredit;
+var idstatus;
+
+
+
+
+//*************************************************
+function loadCredit()
+//*************************************************
+{
+ $('#form1').fadeTo(2000,0.1);
+ $('#spinner').show();
+ idcredit=setInterval("loadCreditxml()", 4000); 
+ startCreditxml();
+}
+
+
+//*************************************************
+function startCreditxml()
+//*************************************************
+{
+$(document).ready(function(){
+    $.ajax({
+	type: "GET",
+	url: "startcredit.xml?sid="+Math.random(),
+	dataType: "xml",
+	cache: false,
+	success: function(xml){
+ 			}
+		});
+	});
+}/***** startCredit() *****/
+
+//*************************************************
+function loadCreditxml()
+//*************************************************
+{
+$(document).ready(function(){
+    $.ajax({
+        type: "GET",
+        url: "credit.xml?sid="+Math.random(),
+        dataType: "xml",
+        cache: false,
+        success: function(xml){
+            $(xml).find('CREDIT').each(function(){	
+                var jure=$(this).find('STATE').text();
+                $("#txtSTATE").val($(this).find('STATE').text()); 
+                if(jure=="TIMEOUT")
+                    {
+                    clearInterval(idcredit);
+                    $('#spinner').hide();
+                    $('#form1').fadeTo(500,1);
+                    alert( "Nema odgovora na poruku");
+                    }
+                else if(jure!="WAIT")
+                    {
+                    clearInterval(idcredit);
+                    $('#spinner').hide();
+                    $('#form1').fadeTo(500,1);
+                    alert("Preostali iznos (KN): " + jure );
+                    }                                       
+                });
+            }
+        });
+    });
+}/***** loadCredit() *****/
+
+//*************************************************
+function loadStatus()
+//*************************************************
+{
+var state,statetext;
+$(document).ready(function(){
+        $.ajax({
+		type: "GET",
+		url: "smsstatus.xml?sid="+Math.random(),
+		dataType: "xml",
+		cache: false,
+		success: function(xml){
+			$(xml).find('SMS').each(function(){
+				state=$(this).find('STATE').text();
+                                if(state==="-1")
+                                    statetext="neispravno ime ili lozinka"
+                                else if(state==="-2")                                    
+                                    statetext="neispravan XML format"
+                                else if(state==="-3")
+                                    statetext="istekao kredit"
+                                else if(state==="-4")
+                                    statetext="neispravan broj mobitela"
+                                else if(state==="-5")
+                                    statetext="system error"
+                                else
+                                    statetext="test poruka poslana"
+				var credit=$(this).find('CREDIT').text();
+				if(state!="")
+					{
+					clearInterval(idstatus);
+					alert( "Status: " + statetext + "       "+"Kredit: " + credit );
+					}
+				});
+			}
+		});
+	});
+}/***** loadStatus() *****/
+
+
+
+
+//*************************************************
+function loadSMS()
+//*************************************************
+{
+//idcredit=setInterval("loadCredit()", 2000);
+$(document).ready(function(){
+	$.ajax({
+		type: "GET",
+		url: "sms.xml?sid="+Math.random(),
+		dataType: "xml",
+		cache: false,
+		success: function(xml){
+			$(xml).find('SMS').each(function(){	
+				$("#txtIP").val($(this).find('IP').text());
+				$("#txtPORT").val($(this).find('PORT').text()); 
+				$("#txtUNAME").val($(this).find('UNAME').text()); 
+				$("#txtPASS").val($(this).find('PASS').text()); 
+				$("#txtNAME").val($(this).find('NAME').text()); 
+				$("#txtGSM1").val($(this).find('GSM1').text()); 
+				$("#txtGSM2").val($(this).find('GSM2').text());  
+				$("#txtGSM3").val($(this).find('GSM3').text());				
+				$("#txtGSM4").val($(this).find('GSM4').text());
+				$("#txtGSM5").val($(this).find('GSM5').text());
+				$("#txtNAME1").val($(this).find('NAME1').text());
+				$("#txtNAME2").val($(this).find('NAME2').text());
+				$("#txtNAME3").val($(this).find('NAME3').text());
+				$("#txtNAME4").val($(this).find('NAME4').text());
+				$("#txtNAME5").val($(this).find('NAME5').text());
+				var vLOG=$(this).find('LOG').text();
+				if (vLOG == "ON")
+					$('input[name=cbxLOG]').attr('checked', true);
+				else 
+					$('input[name=cbxLOG]').attr('checked', false);
+				});
+			}
+		});
+	});
+}/***** loadSMS() *****/
+
+//*************************************************
+function SendData()
+//*************************************************
+{
+var xmlDocument;
+
+if( ($("#cbxlog").val())===true)	
+	var logfile="ON";
+else	
+	var logfile="OFF";
+xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
+xmlDocument+="<SMS>";
+xmlDocument+="<IP>"+$("#txtIP").val()+"</IP>";
+xmlDocument+="<PORT>"+$("#txtPORT").val()+"</PORT>";
+xmlDocument+="<UNAME>"+$("#txtUNAME").val()+"</UNAME>";
+xmlDocument+="<PASS>"+$("#txtPASS").val()+"</PASS>";
+xmlDocument+="<GSM1>"+$("#txtGSM1").val()+"</GSM1>";
+xmlDocument+="<GSM2>"+$("#txtGSM2").val()+"</GSM2>";
+xmlDocument+="<GSM3>"+$("#txtGSM3").val()+"</GSM3>";
+xmlDocument+="<GSM4>"+$("#txtGSM4").val()+"</GSM4>";
+xmlDocument+="<GSM5>"+$("#txtGSM5").val()+"</GSM5>";
+xmlDocument+="<NAME1>"+$("#txtNAME1").val()+"</NAME1>";
+xmlDocument+="<NAME2>"+$("#txtNAME2").val()+"</NAME2>";
+xmlDocument+="<NAME3>"+$("#txtNAME3").val()+"</NAME3>";
+xmlDocument+="<NAME4>"+$("#txtNAME4").val()+"</NAME4>";
+xmlDocument+="<NAME5>"+$("#txtNAME5").val()+"</NAME5>";
+xmlDocument+="<LOGFILE>"+logfile+"</LOGFILE>";
+xmlDocument+="</SMS>";
+$.ajax({ 
+	url: "savesms.sva"+getstring(), 
+	type: "POST", 
+	contentType: "text/xml", 
+	processData: false, 
+	data: xmlDocument, 
+	//error:function(xhr,err,e){ alert( "Error: " + err ); }
+	success: function(){alert('Podaci spremljeni');},
+  	error: function(){alert('Greska');}
+	});
+}/***** SendData() *****/
+
+
+
+//*************************************************
+function SendTest(brojmaila)
+//*************************************************
+{
+var xmlDocument;
+var testsms="sms1";
+if(brojmaila==1)
+	testsms="sms1";
+else if(brojmaila==2)
+	testsms="sms2";
+else if(brojmaila==3)
+	testsms="sms3";
+else if(brojmaila==4)
+	testsms="sms4";
+else if(brojmaila==5)
+	testsms="sms5";
+else if(brojmaila==6)
+	testsms="delete";
+xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
+xmlDocument+="<TESTSMA>";
+xmlDocument+="<TSMS>"+testsms+"</TSMS>";
+xmlDocument+="</TESTSMS>";
+idstatus=setInterval("loadStatus()", 2000);
+$.ajax({ 
+	url: "testsms.sva"+getstring(),
+	type: "POST", 
+	contentType: "text/xml", 
+	processData: false, 
+	data: xmlDocument, 
+	//error:function(xhr,err,e){ alert( "Error: " + err ); }
+	success: function(){alert('Test SMS poslan');},
+  	error: function(){alert('Greska');}
+	});
+}
+
+</script>
+
+
+</style>
+<body class="backcolor" onLoad="loadSMS()" >
+<div id='content'>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadmenu();
+            $("#Spremi").jqxButton({ width: '150',height: '25px'});
+            $('#Spremi').on('click', function () {SendData();});
+            $("#test1").jqxButton({ width: '100',height: '25px'});
+            $("#test1").on('click', function () {SendTest(1);});
+            $("#test2").jqxButton({ width: '100',height: '25px'});
+            $("#test2").on('click', function () {SendTest(2);});
+            $("#test3").jqxButton({ width: '100',height: '25px'});
+            $("#test3").on('click', function () {SendTest(3);});
+            $("#test4").jqxButton({ width: '100',height: '25px'});
+            $("#test4").on('click', function () {SendTest(4);});
+            $("#test5").jqxButton({ width: '100',height: '25px'});
+            $("#test5").on('click', function () {SendTest(5);});
+            $("#Delete").jqxButton({ width: '100',height: '25px'});
+            $("#Delete").on('click', function () {SendTest(6);});
+            $("#credit").jqxButton({ width: '150',height: '25px'});
+            $("#credit").on('click', function () {loadCredit();});
+         
+        
+        
+        
+        $("#cbxlog").jqxCheckBox({ width: 60, height: 25}); 
+        //$("#sonoff").jqxCheckBox({ width: 60, height: 25});
+        //$('#sonoff').on('checked', function (event) {$("#edit").show();});
+        //$('#sonoff').on('unchecked', function (event) {$("#edit").hide();});
+    }
+);
+
+    </script>
+    
+    <div class="logo_row">
+        <div class="logo_left"><img src="logot.gif" /></div>
+       <div class="logo_center"><h2 class="webenergy">WEBTERMO</h2></div>
+        <div class="logo_right"></div>
+    </div>
+    <div id='jqxMenu'></div>
+    <div style="height:20px" ></div>
+</div>	
+    <div style="height:30px" ></div>   
+  <table  border="0" align="center">
+ <tr>
+      <td width="200"><font color="#333333"><strong>SMS SERVER IP:</strong></font></td>
+      <td width="200"><input name="txtIP" type="text" id="txtIP" size="20" maxlength="15" /></td>
+    </tr>
+	<tr>
+      <td ><font color="#333333"><strong>PORT:</strong></font></td>
+      <td ><input name="txtPORT" type="text" id="txtPORT" size="10" maxlength="5" /></td>
+    </tr>
+    <tr>
+      <td><font color="#333333"><strong>User name:</strong></font></td>
+      <td><input name="txtUNAME" type="text" id="txtUNAME" size="20" maxlength="15" /></td>
+    </tr>
+    <tr>
+      <td><font color="#333333"><strong>Password:</strong></font></td>
+      <td><input name="txtPASS" type="password" id="txtPASS" size="20" maxlength="15" /></td>
+    </tr>
+</table>
+    <div style="height:20px" ></div>       
+<table width="200" border="0" align="center">
+    <tr>
+      <td width="200"> <input type="button" id="credit" value="Stanje kredita" /></div></td>
+    </tr>
+  </table>    
+    <div style="height:30px" ></div>   
+  <table  border="0" align="center">
+    <tr>
+      <td ><font color="#333333"><strong>GSM 1:</strong></font></td>
+      <td colspan="2"><input name="txtGSM1" type="text" id="txtGSM1" size="20" maxlength="16" /></td>
+      <td ><font color="#333333"><strong>NAME 1:</strong></font></td>
+      <td colspan="2"><input name="txtNAME1" type="text" id="txtNAME1" size="40" maxlength="30" /></td>
+      <td ><div align="center" > <input type="button" id="test1" value="Test 1" /></div></td>
+    </tr>
+    <tr>
+      <td><font color="#333333"><strong>GSM 2:</strong></font></td>
+      <td colspan="2"><input name="txtGSM2" type="text" id="txtGSM2" size="20" maxlength="16" /></td>
+	  <td width="84"><font color="#333333"><strong>NAME 2:</strong></font></td>
+      <td colspan="2"><input name="txtNAME2" type="text" id="txtNAME2" size="40" maxlength="30" /></td>
+      <td><div align="center" > <input type="button" id="test2" value="Test 2" /></div></td>
+    </tr>
+    <tr>
+      <td height="24"><font color="#333333"><strong>GSM 3:</strong></font></td>
+      <td colspan="2"><input name="txtGSM3" type="text" id="txtGSM3" size="20" maxlength="16" /></td>
+		<td width="84"><font color="#333333"><strong>NAME 3:</strong></font></td>
+      <td colspan="2"><input name="txtNAME3" type="text" id="txtNAME3" size="40" maxlength="30" /></td>
+      <td><div align="center" > <input type="button" id="test3" value="Test 3" /></div></td>
+    </tr>
+    <tr>
+      <td height="24"><font color="#333333"><strong>GSM 4:</strong></font></td>
+      <td colspan="2"><input name="txtGSM4" type="text" id="txtGSM4" size="20" maxlength="16" /></td>
+	        <td width="84"><font color="#333333"><strong>NAME 4:</strong></font></td>
+      <td colspan="2"><input name="txtNAME4" type="text" id="txtNAME4" size="40" maxlength="30" /></td>
+      <td><div align="center" > <input type="button" id="test4" value="Test 4" /></div></td>
+    </tr>
+    <tr>
+      <td height="24"><font color="#333333"><strong>GSM 5:</strong></font></td>
+      <td colspan="2"><input name="txtGSM5" type="text" id="txtGSM5" size="20" maxlength="16" /></td>
+	        <td width="84"><font color="#333333"><strong>NAME 5:</strong></font></td>
+      <td colspan="2"><input name="txtNAME5" type="text" id="txtNAME5" size="40" maxlength="30" /></td>
+      <td><div align="center" > <input type="button" id="test5" value="Test 5" /></div></td>
+    </tr>
+   <tr>
+      <td height="24"><font color="#333333"><strong>LOG:</strong></font></td>
+      <td width="86"><div id='cbxlog' style='margin-left: 10px; float: left;'><a href="logsms.txt"></a></td>
+      <td width="160"><a href="logsms.txt">Logfile</a></td>
+      <td> <input type="button" id="Delete" value="Izbriši" /></div></td>
+   </tr> 
+  </table>
+  <br />
+  <br />
+  <table width="56" border="0" align="center">
+    <tr>
+      <td width="50"><div align="center" > <input type="button" id="Spremi" value="Spremi" /></div></td>
+    </tr>
+  </table>
+  <p><br />
+  </p>
+  <p></p>
+</form>
+

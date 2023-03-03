@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Reset</title>
+<link rel="stylesheet" href="jqxbase.css" type="text/css" />
+<link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+<link rel="stylesheet" href="still.css" type="text/css" />
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="demos.js"></script>
+<script type="text/javascript" src="jqx_all.js"></script>
+<script type="text/javascript" src="pass.js"></script>
+<script type="text/javascript">
+	
+	
+//*************************************************
+function loadCode()
+//*************************************************
+{
+$(document).ready(function() {
+    $.ajax({
+        type: "GET",
+        url: "code.xml?sid="+Math.random(),
+        dataType: "xml",
+        cache: false,
+        success: function(xml){
+            $(xml).find('DSCODE').each(function(){	
+                    $("#codnum").val($(this).find('CODE').text()); 
+                    });
+            }
+        });
+    });
+}/***** loadCode() *****/
+
+
+
+
+</script>
+</head>
+
+<body>
+<div id='content'>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadmenu();
+             $("#Code").jqxButton({ width: '150',height: '25px'});
+             $('#Code').on('click', function () {loadCode();});
+        });
+    </script>
+    
+    <div class="logo_row">
+        <div class="logo_left"><img src="logot.gif" /></div>
+       <div class="logo_center"><h2 class="webenergy">WEBTERMO</h2></div>
+        <div class="logo_right"></div>
+    </div>
+    <div id='jqxMenu'></div>
+    <div style="height:40px" ></div>
+</div>	    
+  <p align="center">
+    <input name="text" type="text" id="codnum" readonly="true">
+  </p>
+  <p align="center"><div align="center" > <input type="button" value="Očitaj serijski broj" id='Code' /></div>
+</p>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<h1></h1>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Senzor1</title>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="pass.js"></script>
+
+  <link rel="stylesheet" href="jqxbase.css" type="text/css" />
+  <link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+  <link rel="stylesheet" href="still.css" type="text/css" />
+  <script type="text/javascript" src="demos.js"></script>
+  <script type="text/javascript" src="jqx_all.js"></script>
+  <script type="text/javascript" src="jqxdata.js"></script>
+  <script type="text/javascript" src="jqxrangeselector.js"></script>
+  <script type="text/javascript" src="pass.js"></script>
+  <script language="javascript">
+
+
+    var idcredit;
+    var idstatus;
+
+
+
+
+    //*************************************************
+    function loadCredit()
+    //*************************************************
+    {
+      $('#form1').fadeTo(2000, 0.1);
+      $('#spinner').show();
+      idcredit = setInterval("loadCreditxml()", 4000);
+      startCreditxml();
+    }
+
+
+    //*************************************************
+    function startCreditxml()
+    //*************************************************
+    {
+      $(document).ready(function () {
+        $.ajax({
+          type: "GET",
+          url: "startcredit.xml?sid=" + Math.random(),
+          dataType: "xml",
+          cache: false,
+          success: function (xml) {
+          }
+        });
+      });
+    }/***** startCredit() *****/
+
+    //*************************************************
+    function loadCreditxml()
+    //*************************************************
+    {
+      $(document).ready(function () {
+        $.ajax({
+          type: "GET",
+          url: "credit.xml?sid=" + Math.random(),
+          dataType: "xml",
+          cache: false,
+          success: function (xml) {
+            $(xml).find('CREDIT').each(function () {
+              var jure = $(this).find('STATE').text();
+              $("#txtSTATE").val($(this).find('STATE').text());
+              if (jure == "TIMEOUT") {
+                clearInterval(idcredit);
+                $('#spinner').hide();
+                $('#form1').fadeTo(500, 1);
+                alert("Nema odgovora na poruku");
+              }
+              else if (jure != "WAIT") {
+                clearInterval(idcredit);
+                $('#spinner').hide();
+                $('#form1').fadeTo(500, 1);
+                alert("Preostali iznos (KN): " + jure);
+              }
+            });
+          }
+        });
+      });
+    }/***** loadCredit() *****/
+
+    //*************************************************
+    function loadStatus()
+    //*************************************************
+    {
+      var state, statetext;
+      $(document).ready(function () {
+        $.ajax({
+          type: "GET",
+          url: "smsstatus.xml?sid=" + Math.random(),
+          dataType: "xml",
+          cache: false,
+          success: function (xml) {
+            $(xml).find('SMS').each(function () {
+              state = $(this).find('STATE').text();
+              if (state === "-1")
+                statetext = "neispravno ime ili lozinka"
+              else if (state === "-2")
+                statetext = "neispravan XML format"
+              else if (state === "-3")
+                statetext = "istekao kredit"
+              else if (state === "-4")
+                statetext = "neispravan broj mobitela"
+              else if (state === "-5")
+                statetext = "system error"
+              else
+                statetext = "test poruka poslana"
+              var credit = $(this).find('CREDIT').text();
+              if (state != "") {
+                clearInterval(idstatus);
+                alert("Status: " + statetext + "       " + "Kredit: " + credit);
+              }
+            });
+          }
+        });
+      });
+    }/***** loadStatus() *****/
+
+
+
+
+    //*************************************************
+    function loadWAPP()
+    //*************************************************
+    {
+      //idcredit=setInterval("loadCredit()", 2000);
+      $(document).ready(function () {
+        $.ajax({
+          type: "GET",
+          url: "wapp.xml?sid=" + Math.random(),
+          dataType: "xml",
+          cache: false,
+          success: function (xml) {
+            $(xml).find('WHATSAPP').each(function () {
+              $("#txtNAME1").val($(this).find('NAME1').text());
+              $("#txtWAPP1").val($(this).find('NUMBER1').text());
+              $("#txtAPI1").val($(this).find('KEY1').text());
+              $("#txtNAME2").val($(this).find('NAME2').text());
+              $("#txtWAPP2").val($(this).find('NUMBER2').text());
+              $("#txtAPI2").val($(this).find('KEY2').text());
+              $("#txtNAME3").val($(this).find('NAME3').text());
+              $("#txtWAPP3").val($(this).find('NUMBER3').text());
+              $("#txtAPI3").val($(this).find('KEY3').text());
+              $("#txtNAME4").val($(this).find('NAME4').text());
+              $("#txtWAPP4").val($(this).find('NUMBER4').text());
+              $("#txtAPI4").val($(this).find('KEY4').text());
+              $("#txtNAME5").val($(this).find('NAME5').text());
+              $("#txtWAPP5").val($(this).find('NUMBER5').text());
+              $("#txtAPI5").val($(this).find('KEY5').text());
+
+            });
+          }
+        });
+      });
+    }/***** loadWAPP() *****/
+
+    //*************************************************
+    function SendData()
+    //*************************************************
+    {
+      var xmlDocument;
+
+      if (($("#cbxlog").val()) === true)
+        var logfile = "ON";
+      else
+        var logfile = "OFF";
+      xmlDocument = "<?xml version='1.0' encoding='iso-8859-1'?>";
+      xmlDocument += "<WHATSAPP>";
+      xmlDocument += "<NAME1>" + $("#txtNAME1").val() + "</NAME1>";
+      xmlDocument += "<NUMBER1>" + $("#txtWAPP1").val() + "</NUMBER1>";
+      xmlDocument += "<KEY1>" + $("#txtAPI1").val() + "</KEY1>";
+      xmlDocument += "<NAME2>" + $("#txtNAME2").val() + "</NAME2>";
+      xmlDocument += "<NUMBER2>" + $("#txtWAPP2").val() + "</NUMBER2>";
+      xmlDocument += "<KEY2>" + $("#txtAPI2").val() + "</KEY2>";
+      xmlDocument += "<NAME3>" + $("#txtNAME3").val() + "</NAME3>";
+      xmlDocument += "<NUMBER3>" + $("#txtWAPP3").val() + "</NUMBER3>";
+      xmlDocument += "<KEY3>" + $("#txtAPI3").val() + "</KEY3>";
+      xmlDocument += "<NAME4>" + $("#txtNAME4").val() + "</NAME4>";
+      xmlDocument += "<NUMBER4>" + $("#txtWAPP4").val() + "</NUMBER4>";
+      xmlDocument += "<KEY4>" + $("#txtAPI4").val() + "</KEY4>";
+      xmlDocument += "<NAME5>" + $("#txtNAME5").val() + "</NAME5>";
+      xmlDocument += "<NUMBER5>" + $("#txtWAPP5").val() + "</NUMBER5>";
+      xmlDocument += "<KEY5>" + $("#txtAPI5").val() + "</KEY5>";
+
+      xmlDocument += "</WHATSAPP>";
+      $.ajax({
+        url: "savewapp.sva" + getstring(),
+        type: "POST",
+        contentType: "text/xml",
+        processData: false,
+        data: xmlDocument,
+        //error:function(xhr,err,e){ alert( "Error: " + err ); }
+        success: function () { alert('Podaci spremljeni'); },
+        error: function () { alert('Greska'); }
+      });
+    }/***** SendData() *****/
+
+
+
+    //*************************************************
+    function SendTest(brojmaila)
+    //*************************************************
+    {
+      var xmlDocument;
+      var testsms = "wapp1";
+      if (brojmaila == 1)
+        testsms = "wapp1";
+      else if (brojmaila == 2)
+        testsms = "wapp2";
+      else if (brojmaila == 3)
+        testsms = "wapp3";
+      else if (brojmaila == 4)
+        testsms = "wapp4";
+      else if (brojmaila == 5)
+        testsms = "wapp5";
+
+      xmlDocument = "<?xml version='1.0' encoding='iso-8859-1'?>";
+      xmlDocument += "<TESTWAPP>";
+      xmlDocument += "<TWAPP>" + testsms + "</TWAPP>";
+      xmlDocument += "</TESTWAPP>";
+      //idstatus = setInterval("loadStatus()", 2000);
+      $.ajax({
+        url: "wapptest.sva" + getstring(),
+        type: "POST",
+        contentType: "text/xml",
+        processData: false,
+        data: xmlDocument,
+        //error:function(xhr,err,e){ alert( "Error: " + err ); }
+        success: function () { alert('Test SMS poslan'); },
+        error: function () { alert('Greska'); }
+      });
+    }
+
+  </script>
+
+
+  </style>
+
+<body class="backcolor" onLoad="loadWAPP()">
+  <div id='content'>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        loadmenu();
+        $("#Spremi").jqxButton({ width: '150', height: '25px' });
+        $('#Spremi').on('click', function () { SendData(); });
+        $("#test1").jqxButton({ width: '100', height: '25px' });
+        $("#test1").on('click', function () { SendTest(1); });
+        $("#test2").jqxButton({ width: '100', height: '25px' });
+        $("#test2").on('click', function () { SendTest(2); });
+        $("#test3").jqxButton({ width: '100', height: '25px' });
+        $("#test3").on('click', function () { SendTest(3); });
+        $("#test4").jqxButton({ width: '100', height: '25px' });
+        $("#test4").on('click', function () { SendTest(4); });
+        $("#test5").jqxButton({ width: '100', height: '25px' });
+        $("#test5").on('click', function () { SendTest(5); });
+
+
+      }
+      );
+
+    </script>
+
+    <div class="logo_row">
+      <div class="logo_left"><img src="logot.gif" /></div>
+      <div class="logo_center">
+        <h2 class="webenergy">WEBTERMO</h2>
+      </div>
+      <div class="logo_right"></div>
+    </div>
+    <div id='jqxMenu'></div>
+    <div style="height:20px"></div>
+  </div>
+
+  <div style="height:30px"></div>
+  <table border="0" align="center" cellspacing="15">
+    <tr>
+      <td>
+        <font color="#333333"><strong>WAPP 1:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtWAPP1" size="20" maxlength="16" /></td>
+      <td align="right">
+        <font color="#333333"><strong>NAME 1:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtNAME1" size="40" maxlength="30" /></td>
+      <td align="right">
+        <font color="#333333"><strong>APIKEY 1:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtAPI1" size="10" maxlength="30" /></td>
+      <td>
+        <div align="center"> <input type="button" id="test1" value="Test 1" /></div>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <font color="#333333"><strong>WAPP 2:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtWAPP2" size="20" maxlength="16" /></td>
+      <td align="right">
+        <font color="#333333"><strong>NAME 2:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtNAME2" size="40" maxlength="30" /></td>
+      <td align="right">
+        <font color="#333333"><strong>APIKEY 2:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtAPI2" size="10" maxlength="30" /></td>
+      <td>
+        <div align="center"> <input type="button" id="test2" value="Test 2" /></div>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <font color="#333333"><strong>WAPP 3:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtWAPP3" size="20" maxlength="16" /></td>
+      <td align="right">
+        <font color="#333333"><strong>NAME 3:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtNAME3" size="40" maxlength="30" /></td>
+      <td align="right">
+        <font color="#333333"><strong>APIKEY 3:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtAPI3" size="10" maxlength="30" /></td>
+      <td>
+        <div align="center"> <input type="button" id="test3" value="Test 3" /></div>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <font color="#333333"><strong>WAPP 4:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtWAPP4" size="20" maxlength="16" /></td>
+      <td align="right">
+        <font color="#333333"><strong>NAME 4:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtNAME4" size="40" maxlength="30" /></td>
+      <td align="right">
+        <font color="#333333"><strong>APIKEY 4:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtAPI4" size="10" maxlength="30" /></td>
+      <td>
+        <div align="center"> <input type="button" id="test4" value="Test 4" /></div>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <font color="#333333"><strong>WAPP 5:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtWAPP5" size="20" maxlength="16" /></td>
+      <td align="right">
+        <font color="#333333"><strong>NAME 5:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtNAME5" size="40" maxlength="30" /></td>
+      <td align="right">
+        <font color="#333333"><strong>APIKEY 5:</strong></font>
+      </td>
+      <td colspan="2"><input type="text" id="txtAPI5" size="10" maxlength="30" /></td>
+      <td>
+        <div align="center"> <input type="button" id="test5" value="Test 1" /></div>
+      </td>
+    </tr>
+
+  </table>
+  <br />
+  <br />
+  <table width="56" border="0" align="center">
+    <tr>
+      <td width="50">
+        <div align="center"> <input type="button" id="Spremi" value="Spremi" /></div>
+      </td>
+    </tr>
+  </table>
+  <p><br />
+  </p>
+  <p></p>
+  </form>

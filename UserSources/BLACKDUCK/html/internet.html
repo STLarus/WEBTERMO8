@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Reset</title>
+<link rel="stylesheet" href="jqxbase.css" type="text/css" />
+<link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+<link rel="stylesheet" href="still.css" type="text/css" />
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="demos.js"></script>
+<script type="text/javascript" src="jqx_all.js"></script>
+<script type="text/javascript" src="pass.js"></script>
+<script type="text/javascript">
+
+function OnLoad()
+{
+loadStatusi();
+}
+
+//*************************************************
+function SendData()
+//*************************************************
+{
+var xmlDocument;
+if ($("input:radio[name='rbDDNS']:checked").val() == 1)
+	var DDNSvalue="ON";
+else
+	 DDNSvalue="OFF";  
+if ($("input:radio[name='rbDHCP']:checked").val() == 1)
+	var DHCPvalue="ON";
+else
+	 DHCPvalue="OFF";  	      
+xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
+xmlDocument+="<IPMODULA>";
+xmlDocument+="<NAZIV>"+$("#naziv").val()+"</NAZIV>";
+xmlDocument+="<DHCP>"+DHCPvalue+"</DHCP>";
+xmlDocument+="<DDNNS>"+DDNSvalue+"</DDNS>";
+xmlDocument+="<IP>"+$("#ip").val()+"</IP>";
+xmlDocument+="<MAC>"+$("#macad").val()+"</MAC>";
+xmlDocument+="<SUB>"+$("#subnet").val()+"</SUB>";
+xmlDocument+="<ROUT>"+$("#usm").val()+"</ROUT>";
+xmlDocument+="<DNS>"+$("#dns").val()+"</DNS>";
+xmlDocument+="<USER>"+$("#ime").val()+"</USER>";
+xmlDocument+="<PASS>"+$("#loz").val()+"</PASS>";
+xmlDocument+="<HOST>"+$("#host").val()+"</HOST>";
+xmlDocument+="<HTTP>"+$("#http").val()+"</HTTP>";
+xmlDocument+="<ALARMIP>"+$("#asip").val()+"</ALARMIP>";
+xmlDocument+="<ALARMPORT>"+$("#asport").val()+"</ALARMPORT>";
+xmlDocument+="</IPMODULA>";
+$.ajax({ 
+	url: "savenet.sva", 
+	type: "POST", 
+	contentType: "text/xml", 
+	processData: false, 
+	data: xmlDocument, 
+	success: function(){alert('Podaci spremljeni');},
+  	error: function(){alert('Greska');}
+	});
+}/***** SendData() *****/
+
+
+//*************************************************
+function ResetModula()
+//*************************************************
+{
+var xmlDocument;
+xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
+xmlDocument+="<RESETMODULA>";
+xmlDocument+="<RESET>RESET</RESET";
+xmlDocument+="</RESETMODULA>";
+$.ajax({ 
+	url: "reset.sva", 
+	type: "POST", 
+	contentType: "text/xml", 
+	processData: false, 
+	data: xmlDocument, 
+	success: function(){alert('Sustav resetiran');},
+  	error: function(){alert('Greska');}
+	});
+}/***** ResetModula() *****/
+
+//*************************************************
+function loadStatusi()
+//*************************************************
+{
+$(document).ready(function(){
+	$.ajax({
+		type: "GET",
+		url: "mreza.xml?sid="+Math.random(),
+		dataType: "xml",
+		cache: false,
+		success: function(xml){
+			$(xml).find('IPMODULA').each(function(){	
+				$("#ip").val($(this).find('IP').text()); 
+				$("#subnet").val($(this).find('SUB').text()); 
+				$("#usm").val($(this).find('ROUT').text()); 
+				$("#macad").val($(this).find('MAC').text()); 
+				$("#http").val($(this).find('HTTP').text()); 
+				$("#ime").val($(this).find('USER').text()); 
+				$("#loz").val($(this).find('PASS').text()); 
+				$("#host").val($(this).find('HOST').text()); 
+				$("#naziv").val($(this).find('NAZIV').text());
+				$("#dns").val($(this).find('DNS').text());
+				$("#asip").val($(this).find('ALARMIP').text());
+				$("#asport").val($(this).find('ALARMPORT').text());
+				var vDDNS=$(this).find('DDNS').text();
+				var vDHCP=$(this).find('DHCP').text();
+				});
+			}
+		});
+	});
+}/***** LoadStatusi() *****/
+
+
+
+
+</script>
+
+
+<body class="backcolor" onload="OnLoad();" >
+<div id='content'>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadmenu();
+             $("#Spremi").jqxButton({ width: '150',height: '25px'});
+             $('#Spremi').on('click', function () {SendData();});
+             $("#Reset").jqxButton({ width: '150',height: '25px',template: 'danger'});
+             $('#Reset').on('click', function () {ResetModula();});             
+        });
+    </script>
+    
+    <div class="logo_row">
+        <div class="logo_left"><img src="logot.gif" /></div>
+       <div class="logo_center"><h2 class="webenergy">WEBTERMO</h2></div>
+        <div class="logo_right"></div>
+    </div>
+    <div id='jqxMenu'></div>
+    <div style="height:40px" ></div>
+</div>	
+<table width="395" border="0" align="center">
+  <tr>
+    <td><div align="center">
+    <font color="#004a73" ><strong>Postavke</strong></font>
+    </div></td>
+  </tr>
+</table>
+<table width="550" border="0" align="center">
+  <tr>
+    <td><strong><font color="#">Objekt :</font></strong></td>
+    <td><input name="naziv" type="text" id="naziv" size="46" maxlength="32" /></td>
+  </tr>
+  <tr>
+    <td width="164"><strong><font color="#">IP adresa :</font></strong></td>
+    <td width="276"><label>
+      <input type="text" name="ip" id="ip" />
+    </label></td>
+  </tr>
+  <tr>
+    <td><strong>SUBNET :</strong></td>
+    <td><input type="text" name="subnet" id="subnet" /></td>
+  </tr>
+  <tr>
+    <td><strong>Usmjerivač :</strong></td>
+    <td><input type="text" name="usm" id="usm" /></td>
+  </tr>
+  <tr>
+    <td><strong>Mac adresa:</strong></td>
+    <td><input name="macad" type="text" id="macad" readonly="true" /></td>
+  </tr>
+  <tr>
+    <td><strong>DNS :</strong></td>
+    <td><input type="text" name="dns" id="dns" /></td>
+  </tr>
+  <tr>
+    <td><strong>HTTP Port :</strong></td>
+    <td><input type="text" name="http" id="http" /></td>
+  </tr>
+  <tr>
+    <td><strong>Alarm server IP :</strong></td>
+    <td><input type="text" name="asip" id="asip" /></td>
+  </tr>    
+  <tr>
+    <td><strong>Alarm server Port :</strong></td>
+    <td><input type="text" name="asport" id="asport" /></td>
+  </tr>
+   </table>
+<table width="210" border="0" align="center">
+  <tr>
+    <td width="61" height="23"><font color="#004a73">DHCP</font></td>
+    <td width="52"><input name="rbDHCP" type="radio" value="1">
+      ON</td>
+    <td width="61"><input name="rbDHCP" type="radio" value="2" checked="checked" />      
+      OFF
+  </tr>
+</table>
+<table width="188" border="0" align="center">
+  <tr>
+    <td width="61" height="23"><font color="#004a73">DDNS      </font></td>
+    <td width="52"><input name="rbDDNS" type="radio" value="1">
+      ON</td>
+    <td width="61"><input name="rbDDNS" type="radio" value="2" checked="checked" />      
+      OFF
+  </tr>
+</table>
+<table width="363" border="0" align="center">
+  <tr>
+    <td width="173"><strong>Korisničko ime :</strong></td>
+    <td width="180"><input name="ime" type="text" id="ime" size="16" maxlength="8" /></td>
+  </tr>
+  <tr>
+    <td><strong>Lozinka :</strong></td>
+    <td><input name="loz" type="text" id="loz" size="16" maxlength="8" /></td>
+  </tr>
+  <tr>
+    <td><strong>Host :</strong></td>
+    <td><input name="host" type="text" id="host" size="40" maxlength="32" /></td>
+  </tr>
+</table>
+<div style="height:40px" ></div>    
+<table width="395" border="0" align="center">
+    <tr>
+        <td><div align="center" > <input type="button" value="Spremi" id='Spremi' /></div></td>
+        <td><div align="center" > <input type="button" value="Reset" id='Reset' /></div></td>
+    </tr>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><br>
+</p>

@@ -1,0 +1,521 @@
+<h1></h1>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Senzor1</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="pass.js"></script>
+
+    <link rel="stylesheet" href="jqxbase.css" type="text/css" />
+    <link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+    <link rel="stylesheet" href="still.css" type="text/css" />
+    <script type="text/javascript" src="demos.js"></script>
+    <script type="text/javascript" src="jqx_all.js"></script>
+    <script type="text/javascript" src="jqxdata.js"></script>
+    <script type="text/javascript" src="jqxrangeselector.js"></script>
+    <script type="text/javascript" src="pass.js"></script>
+    <script language="javascript">
+
+        var sensorpage;
+
+
+
+        function OnLoad() {
+            loadStatusi();
+        }
+
+
+        //*************************************************
+        function loadStatusi()
+        //*************************************************
+        {
+            var temp;
+            $(document).ready(function () {
+                $.ajax({
+                    type: "GET",
+                    //url: "input.xml?sid=" + Math.random(),
+                    url: "input.xml?sid=",
+                    dataType: "xml",
+                    cache: false,
+                    success: function (xml) {
+                        $(xml).find('INPUT').each(function () {
+                            $("#name1").val($(this).find('NAME1').text());
+                            $("#name2").val($(this).find('NAME2').text());
+                            $("#name3").val($(this).find('NAME3').text());
+
+                            temp = $(this).find('ALARM1').text();
+                            if (temp == "ON")
+                                $("#alarm1").val(true);
+                            else
+                                $("#alarm1").val(false);
+                            temp = $(this).find('ALARM2').text();
+                            if (temp == "ON")
+                                $("#alarm2").val(true);
+                            else
+                                $("#alarm2").val(false);
+                            temp = $(this).find('ALARM3').text();
+                            if (temp == "ON")
+                                $("#alarm3").val(true);
+                            else
+                                $("#alarm3").val(false);
+
+
+                            temp = $(this).find('TIP1').text();
+                            if (temp == "NO")
+                                $("#tip1").val(true);
+                            else
+                                $("#tip1").val(false);
+                            temp = $(this).find('TIP2').text();
+                            if (temp == "NO")
+                                $("#tip2").val(true);
+                            else
+                                $("#tip2").val(false);
+                            temp = $(this).find('TIP3').text();
+                            if (temp == "NO")
+                                $("#tip3").val(true);
+                            else
+                                $("#tip3").val(false);
+
+
+                            var vMAIL1 = $(this).find('MAIL1').text();
+                            var vMAIL2 = $(this).find('MAIL2').text();
+                            var vMAIL3 = $(this).find('MAIL3').text();
+                            var vMAIL4 = $(this).find('MAIL4').text();
+                            var vMAIL5 = $(this).find('MAIL5').text();
+
+                            if (vMAIL1 === "ON")
+                                $("#email1").val(true);
+                            else
+                                $("#email1").val(false);
+                            if (vMAIL2 === "ON")
+                                $("#email2").val(true);
+                            else
+                                $("#email2").val(false);
+                            if (vMAIL3 === "ON")
+                                $("#email3").val(true);
+                            else
+                                $("#email3").val(false);
+                            if (vMAIL4 === "ON")
+                                $("#email4").val(true);
+                            else
+                                $("#email4").val(false);
+                            if (vMAIL5 === "ON")
+                                $("#email5").val(true);
+                            else
+                                $("#email5").val(false);
+                            var vSMS1 = $(this).find('SMS1').text();
+                            var vSMS2 = $(this).find('SMS2').text();
+                            var vSMS3 = $(this).find('SMS3').text();
+                            var vSMS4 = $(this).find('SMS4').text();
+                            var vSMS5 = $(this).find('SMS5').text();
+                            if (vSMS1 === "ON")
+                                $("#sms1").val(true);
+                            else
+                                $("#sms1").val(false);
+                            if (vSMS2 === "ON")
+                                $("#sms2").val(true);
+                            else
+                                $("#sms2").val(false);
+                            if (vSMS3 === "ON")
+                                $("#sms3").val(true);
+                            else
+                                $("#sms3").val(false);
+                            if (vSMS4 === "ON")
+                                $("#sms4").val(true);
+                            else
+                                $("#sms4").val(false);
+                            if (vSMS5 === "ON")
+                                $("#sms5").val(true);
+                            else
+                                $("#sms5").val(false);
+
+
+                        });
+                    }
+                });
+            });
+        }/***** loadStatusi() *****/
+
+
+        function onResponse() {
+            SensorOnOff();
+        }/***** onResponse() *****/
+
+        //*************************************************
+        function SendData()
+        //*************************************************
+        {
+            var xmlDocument;
+
+            if (($("#alarm1").val()) === true)
+                var chkALARM1 = "ON";
+            else
+                var chkALARM1 = "OFF";
+            if (($("#alarm2").val()) === true)
+                var chkALARM2 = "ON";
+            else
+                var chkALARM2 = "OFF";
+            if (($("#alarm3").val()) === true)
+                var chkALARM3 = "ON";
+            else
+                var chkALARM3 = "OFF";
+            if (($("#tip1").val()) === true)
+                var chkTIP1 = "NO";
+            else
+                var chkTIP1 = "NC";
+            if (($("#tip2").val()) === true)
+                var chkTIP2 = "NO";
+            else
+                var chkTIP2 = "NC";
+            if (($("#tip3").val()) === true)
+                var chkTIP3 = "NO";
+            else
+                var chkTIP3 = "NC";
+
+
+
+
+            if (($("#email1").val()) === true)
+                var chkMAIL1 = "ON";
+            else
+                var chkMAIL1 = "OFF";
+            if (($("#email2").val()) === true)
+                var chkMAIL2 = "ON";
+            else
+                var chkMAIL2 = "OFF";
+            if (($("#email3").val()) === true)
+                var chkMAIL3 = "ON";
+            else
+                var chkMAIL3 = "OFF";
+            if (($("#email4").val()) === true)
+                var chkMAIL4 = "ON";
+            else
+                var chkMAIL4 = "OFF";
+            if (($("#email5").val()) === true)
+                var chkMAIL5 = "ON";
+            else
+                var chkMAIL5 = "OFF";
+
+
+
+            if (($("#sms1").val()) === true)
+                var chkSMS1 = "ON";
+            else
+                var chkSMS1 = "OFF";
+            if (($("#sms2").val()) === true)
+                var chkSMS2 = "ON";
+            else
+                var chkSMS2 = "OFF";
+            if (($("#sms3").val()) === true)
+                var chkSMS3 = "ON";
+            else
+                var chkSMS3 = "OFF";
+            if (($("#sms4").val()) === true)
+                var chkSMS4 = "ON";
+            else
+                var chkSMS4 = "OFF";
+            if (($("#sms5").val()) === true)
+                var chkSMS5 = "ON";
+            else
+                var chkSMS5 = "OFF";
+
+
+            xmlDocument = "<?xml version='1.0' encoding='iso-8859-1'?>";
+            xmlDocument += "<INPUT>";
+            xmlDocument += "<NAME1>" + $("#name1").val() + "</NAME1>";
+            xmlDocument += "<NAME2>" + $("#name2").val() + "</NAME2>";
+            xmlDocument += "<NAME3>" + $("#name3").val() + "</NAME3>";
+            xmlDocument += "<ALARM1>" + chkALARM1 + "</ALARM1>";
+            xmlDocument += "<ALARM2>" + chkALARM2 + "</ALARM2>";
+            xmlDocument += "<ALARM3>" + chkALARM3 + "</ALARM3>";
+            xmlDocument += "<TIP1>" + chkTIP1 + "</TIP1>";
+            xmlDocument += "<TIP2>" + chkTIP2 + "</TIP2>";
+            xmlDocument += "<TIP3>" + chkTIP3 + "</TIP3>";
+
+
+            xmlDocument += "<MAIL1>" + chkMAIL1 + "</MAIL1>";
+            xmlDocument += "<MAIL2>" + chkMAIL2 + "</MAIL2>";
+            xmlDocument += "<MAIL3>" + chkMAIL3 + "</MAIL3>";
+            xmlDocument += "<MAIL4>" + chkMAIL4 + "</MAIL4>";
+            xmlDocument += "<MAIL5>" + chkMAIL5 + "</MAIL5>";
+            xmlDocument += "<SMS1>" + chkSMS1 + "</SMS1>";
+            xmlDocument += "<SMS2>" + chkSMS2 + "</SMS2>";
+            xmlDocument += "<SMS3>" + chkSMS3 + "</SMS3>";
+            xmlDocument += "<SMS4>" + chkSMS4 + "</SMS4>";
+            xmlDocument += "<SMS5>" + chkSMS5 + "</SMS5>";
+            xmlDocument += "</INPUT>";
+            
+            $.ajax({
+                url: "input.sva",
+                type: "POST",
+                contentType: "text/xml",
+                processData: false,
+                data: xmlDocument,
+                //error:function(xhr,err,e){ alert( "Error: " + err ); }
+                success: function () { alert('Podaci spremljeni'); },
+                error: function () { alert('Greska'); }
+            });
+                
+        }
+
+
+
+
+    </script>
+    <!--kraj AJAX-->
+
+    <style type="text/css">
+        <!--
+        body,
+        td,
+        th {
+            font-family: arial;
+            color: #000;
+            font-size: 14px;
+        }
+
+        body {
+            background-color: #FFF;
+            text-align: center;
+        }
+        -->
+    </style>
+</head>
+
+<body class="backcolor" onLoad="OnLoad()">
+    <div id='content'>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                loadmenu();
+                $("#Spremi").jqxButton({ width: '150', height: '25px' });
+                $('#Spremi').on('click', function () { SendData(); });
+
+                $('#alarm1').jqxSwitchButton({
+                    width: '150px',
+                    height: '25px',
+                    onLabel: 'ON',
+                    offLabel: 'OFF'
+                });
+                $('#tip1').jqxSwitchButton({
+                    width: '150px',
+                    height: '25px',
+                    onLabel: 'NO',
+                    offLabel: 'NC'
+                });
+                $('#alarm2').jqxSwitchButton({
+                    width: '150px',
+                    height: '25px',
+                    onLabel: 'ON',
+                    offLabel: 'OFF'
+                });
+                $('#tip2').jqxSwitchButton({
+                    width: '150px',
+                    height: '25px',
+                    onLabel: 'NO',
+                    offLabel: 'NC'
+                });
+                $('#alarm3').jqxSwitchButton({
+                    width: '150px',
+                    height: '25px',
+                    onLabel: 'ON',
+                    offLabel: 'OFF'
+                });
+                $('#tip3').jqxSwitchButton({
+                    width: '150px',
+                    height: '25px',
+                    onLabel: 'NO',
+                    offLabel: 'NC'
+                });
+                $("#sms1").jqxCheckBox({ width: 60, height: 25 });
+                $("#sms2").jqxCheckBox({ width: 60, height: 25 });
+                $("#sms3").jqxCheckBox({ width: 60, height: 25 });
+                $("#sms4").jqxCheckBox({ width: 60, height: 25 });
+                $("#sms5").jqxCheckBox({ width: 60, height: 25 });
+                $("#email1").jqxCheckBox({ width: 60, height: 25 });
+                $("#email2").jqxCheckBox({ width: 60, height: 25 });
+                $("#email3").jqxCheckBox({ width: 60, height: 25 });
+                $("#email4").jqxCheckBox({ width: 60, height: 25 });
+                $("#email5").jqxCheckBox({ width: 60, height: 25 });
+            }
+            );
+
+        </script>
+
+        <div class="logo_row">
+            <div class="logo_left"><img src="logot.gif" /></div>
+            <div class="logo_center">
+                <h2 class="webenergy">WEBTERMO</h2>
+            </div>
+            <div class="logo_right"></div>
+        </div>
+        <div id='jqxMenu'></div>
+        <div style="height:20px"></div>
+    </div>
+    <div align="center">
+        <!-- <table width="300">
+    <tr >
+        <td ><div id='sName' class="div_font_hd1" align="center"></div></td> 
+        <td> <div id='sonoff' style='margin-left: 10px; float: left;'>
+            <span class="div_font_hd2">ULAZ 1</span></div></td>
+    </tr >     
+</table> -->
+    </div>
+
+    <div style="height:10px"></div>
+    <div id='edit'>
+        <div align="center">
+            <table>
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">ULAZ 1</td>
+                </tr>
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Naziv senzora</td>
+                    <td><input name="Naziv1" type="text" id="name1" size="30" maxlength="24" /></td>
+                </tr>
+
+
+
+                <td class="div_font_hd2">Alarm ulaz 1</td>
+                <td>
+                    <div style='margin-top: 3px;' id='alarm1'>
+                </td>
+                </tr>
+
+
+                <td class="div_font_hd2">Tip alarma 1</td>
+                <td>
+                    <div style='margin-top: 3px;' id='tip1'>
+                </td>
+                </tr>
+
+                <tr>
+                    <td style="height:40px;"></td>
+                    <td></td>
+                </tr>
+
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">ULAZ 2</td>
+                </tr>
+
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Naziv ulaza</td>
+                    <td><input name="Naziv2" type="text" id="name2" size="30" maxlength="24" /></td>
+                </tr>
+
+                <tr>
+                    <td class="div_font_hd2">Alarm ulaz 2</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='alarm2'>
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <td class="div_font_hd2">Tip alarma 2</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='tip2'>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:40px;"></td>
+                    <td></td>
+                </tr>
+
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">ULAZ 3</td>
+                </tr>
+
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Naziv ulaza</td>
+                    <td><input name="Naziv3" type="text" id="name3" size="30" maxlength="24" /></td>
+                </tr>
+
+                <tr>
+                    <td class="div_font_hd2">Alarm ulaz 3</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='alarm3'>
+                    </td>
+                </tr>
+
+
+
+                <td class="div_font_hd2">Tip alarma 3</td>
+                <td>
+                    <div style='margin-top: 3px;' id='tip3'>
+                </td>
+                </tr>
+
+
+
+            </table>
+        </div>
+        <div style="height:50px"></div>
+        <div align="center">
+            <table bgcolor="#F0F4FA">
+                <tr>
+                    <td class="div_font_hd2">SMS 1
+                    <td>
+                    <td class="div_font_hd2">SMS 2
+                    <td>
+                    <td class="div_font_hd2">SMS 3
+                    <td>
+                    <td class="div_font_hd2">SMS 4
+                    <td>
+                    <td class="div_font_hd2">SMS 5
+                    <td>
+                    <td class="div_font_hd2">eMail 1
+                    <td>
+                    <td class="div_font_hd2">eMail 2
+                    <td>
+                    <td class="div_font_hd2">eMail 3
+                    <td>
+                    <td class="div_font_hd2">eMail 4
+                    <td>
+                    <td class="div_font_hd2">eMail 5
+                    <td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id='sms1' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='sms2' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='sms3' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='sms4' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='sms5' style='margin-left: 10px; float: left;'>
+                    <td>
+
+                    <td>
+                        <div id='email1' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='email2' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='email3' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='email4' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='email5' style='margin-left: 10px; float: left;'>
+                    <td>
+                </tr>
+
+            </table>
+        </div>
+    </div>
+    <div style="height:20px"></div>
+    <div align="center"> <input type="button" value="Spremi" id='Spremi' /></div>
+</body>
+
+</html>

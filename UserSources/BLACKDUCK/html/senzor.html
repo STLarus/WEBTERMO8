@@ -1,0 +1,539 @@
+<h1></h1>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Senzor1</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="pass.js"></script>
+
+    <link rel="stylesheet" href="jqxbase.css" type="text/css" />
+    <link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+    <link rel="stylesheet" href="still.css" type="text/css" />
+    <script type="text/javascript" src="demos.js"></script>
+    <script type="text/javascript" src="jqx_all.js"></script>
+    <script type="text/javascript" src="jqxdata.js"></script>
+    <script type="text/javascript" src="jqxrangeselector.js"></script>
+    <script type="text/javascript" src="pass.js"></script>
+    <script language="javascript">
+
+        var sensorpage;
+
+
+
+        function OnLoad() {
+            var i = location.search.indexOf("?"); //traži lokaciju za ?
+            sensorpage = location.search.charAt(i + 1); // prvi karakter iza '?'
+            if (sensorpage < 1 || sensorpage > 8)
+                sensorpage = 1;
+            var sime = "Senzor " + sensorpage;
+            $("#sName").text(sime);
+            loadStatusi();
+        }
+
+
+        //*************************************************
+        function loadStatusi()
+        //*************************************************
+        {
+            var xmlcall, vlow, vhigh;
+            if (sensorpage == 1)
+                xmlcall = "sensor1.xml?sid=" + Math.random();
+            else if (sensorpage == 2)
+                xmlcall = "sensor2.xml?sid=" + Math.random();
+            else if (sensorpage == 3)
+                xmlcall = "sensor3.xml?sid=" + Math.random();
+            else if (sensorpage == 4)
+                xmlcall = "sensor4.xml?sid=" + Math.random();
+            else if (sensorpage == 5)
+                xmlcall = "sensor5.xml?sid=" + Math.random();
+            else if (sensorpage == 6)
+                xmlcall = "sensor6.xml?sid=" + Math.random();
+            else if (sensorpage == 7)
+                xmlcall = "sensor7.xml?sid=" + Math.random();
+            else if (sensorpage == 8)
+                xmlcall = "sensor8.xml?sid=" + Math.random();
+            $(document).ready(function () {
+                $.ajax({
+                    type: "GET",
+                    url: xmlcall,
+                    dataType: "xml",
+                    cache: false,
+                    success: function (xml) {
+                        $(xml).find('SENSOR').each(function () {
+                            $("#naziv").val($(this).find('NAME').text());
+                            $("#serialnum").val($(this).find('SERIALNUM').text());
+                            vlow = parseFloat($(this).find('LOWLIMIT').text());
+                            vhigh = parseFloat($(this).find('HIGHLIMIT').text());
+                            $("#Temprange").jqxRangeSelector("setRange", vlow, vhigh);
+                            vlow = parseFloat($(this).find('HIST').text());
+                            $('#Temphist').jqxNumberInput('val', vlow);
+                            vlow = parseFloat($(this).find('KALIB').text());
+                            $('#Kalib').jqxNumberInput('val', vlow);
+                            vlow = parseFloat($(this).find('DELAY').text());
+                            $('#Delay').jqxNumberInput('val', vlow);
+                            vlow = parseFloat($(this).find('KANAL').text());
+                            $('#Kanal').jqxNumberInput('val', vlow);
+
+                            var vWAPP = $(this).find('WAPP1').text();
+                            var vWAPP2 = $(this).find('WAPP2').text();
+                            var vWAPP3 = $(this).find('WAPP3').text();
+                            var vWAPP4 = $(this).find('WAPP4').text();
+                            var vWAPP5 = $(this).find('WAPP5').text();
+
+                            if (vWAPP1 === "ON")
+                                $("#wapp1").val(true);
+                            else
+                                $("#wapp1").val(false);
+                            if (vWAPP2 === "ON")
+                                $("#wapp2").val(true);
+                            else
+                                $("#wapp2").val(false);
+                            if (vWAPP3 === "ON")
+                                $("#wapp3").val(true);
+                            else
+                                $("#wapp3").val(false);
+                            if (vWAPP4 === "ON")
+                                $("#wapp4").val(true);
+                            else
+                                $("#wapp4").val(false);
+                            if (vWAPP5 === "ON")
+                                $("#wapp5").val(true);
+                            else
+                                $("#wapp5").val(false);
+                            var vSMS1 = $(this).find('SMS1').text();
+                            var vSMS2 = $(this).find('SMS2').text();
+                            var vSMS3 = $(this).find('SMS3').text();
+                            var vSMS4 = $(this).find('SMS4').text();
+                            var vSMS5 = $(this).find('SMS5').text();
+                            if (vSMS1 === "ON")
+                                $("#sms1").val(true);
+                            else
+                                $("#sms1").val(false);
+                            if (vSMS2 === "ON")
+                                $("#sms2").val(true);
+                            else
+                                $("#sms2").val(false);
+                            if (vSMS3 === "ON")
+                                $("#sms3").val(true);
+                            else
+                                $("#sms3").val(false);
+                            if (vSMS4 === "ON")
+                                $("#sms4").val(true);
+                            else
+                                $("#sms4").val(false);
+                            if (vSMS5 === "ON")
+                                $("#sms5").val(true);
+                            else
+                                $("#sms5").val(false);
+
+                            var vMKT = $(this).find('MTYPE').text();
+                            if (vMKT === "MKT")
+                                $("#mkt").jqxSwitchButton('check');
+                            else
+                                $("#mkt").jqxSwitchButton('uncheck');
+                            var vENABLE = $(this).find('ENABLE').text();
+                            if (vENABLE == "ON") {
+                                $("#sonoff").val(true);
+                                $("#edit").show();
+                            }
+                            else {
+                                $("#sonoff").val(false);
+                                $("#edit").hide();
+                            }
+                        });
+                    }
+                });
+            });
+        }/***** loadStatusi() *****/
+
+
+        function onResponse() {
+            SensorOnOff();
+        }/***** onResponse() *****/
+
+        //*************************************************
+        function SendData()
+        //*************************************************
+        {
+            var llimit, hlimit;
+            var xmlDocument;
+            var xmlsend;
+            llimit = parseInt($("#lowlimit").val());
+            hlimit = parseInt($("#highlimit").val());
+            if (($("#sonoff").val()) === true)
+                var chkENABLE = "ON";
+            else
+                var chkENABLE = "OFF";
+            if (($("#wapp1").val()) === true)
+                var chkWAPP1 = "ON";
+            else
+                var chkWAPP1 = "OFF";
+            if (($("#wapp2").val()) === true)
+                var chkWAPP2 = "ON";
+            else
+                var chkWAPP2 = "OFF";
+            if (($("#wapp3").val()) === true)
+                var chkWAPP3 = "ON";
+            else
+                var chkWAPP3 = "OFF";
+            if (($("#wapp4").val()) === true)
+                var chkWAPP4 = "ON";
+            else
+                var chkWAPP4 = "OFF";
+            if (($("#wapp5").val()) === true)
+                var chkWAPP5 = "ON";
+            else
+                var chkWAPP5 = "OFF";
+
+
+
+            if (($("#sms1").val()) === true)
+                var chkSMS1 = "ON";
+            else
+                var chkSMS1 = "OFF";
+            if (($("#sms2").val()) === true)
+                var chkSMS2 = "ON";
+            else
+                var chkSMS2 = "OFF";
+            if (($("#sms3").val()) === true)
+                var chkSMS3 = "ON";
+            else
+                var chkSMS3 = "OFF";
+            if (($("#sms4").val()) === true)
+                var chkSMS4 = "ON";
+            else
+                var chkSMS4 = "OFF";
+            if (($("#sms5").val()) === true)
+                var chkSMS5 = "ON";
+            else
+                var chkSMS5 = "OFF";
+
+
+            xmlDocument = "<?xml version='1.0' encoding='iso-8859-1'?>";
+            xmlDocument += "<SENSOR>";
+            xmlDocument += "<NAME>" + $("#naziv").val() + "</NAME>";
+            xmlDocument += "<ENABLE>" + chkENABLE + "</ENABLE>";
+            xmlDocument += "<WAPP1>" + chkWAPP1 + "</WAPP1>";
+            xmlDocument += "<WAPP2>" + chkWAPP2 + "</WAPP2>";
+            xmlDocument += "<WAPP3>" + chkWAPP3 + "</WAPP3>";
+            xmlDocument += "<WAPP4>" + chkWAPP4 + "</WAPP4>";
+            xmlDocument += "<WAPP5>" + chkWAPP5 + "</WAPP5>";
+            xmlDocument += "<SMS1>" + chkSMS1 + "</SMS1>";
+            xmlDocument += "<SMS2>" + chkSMS2 + "</SMS2>";
+            xmlDocument += "<SMS3>" + chkSMS3 + "</SMS3>";
+            xmlDocument += "<SMS4>" + chkSMS4 + "</SMS4>";
+            xmlDocument += "<SMS5>" + chkSMS5 + "</SMS5>";
+            xmlDocument += "<NAME>" + $("#naziv").val() + "</NAME>";
+            xmlDocument += "<SERIALNUM>" + $("#serialnum").val() + "</SERIALNUM>";
+            xmlDocument += "<KANAL>" + $('#Kanal').jqxNumberInput('val') + "</KANAL>";
+            xmlDocument += "<KALIB>" + $('#Kalib').jqxNumberInput('val') + "</KALIB>";
+            xmlDocument += "<DELAY>" + $('#Delay').jqxNumberInput('val') + "</DELAY>";
+            xmlDocument += "<HIST>" + $('#Temphist').jqxNumberInput('val') + "</HIST>";
+            var range = $("#Temprange").jqxRangeSelector('getRange')
+            xmlDocument += "<LOWLIMIT>" + range.from + "</LOWLIMIT>";
+            xmlDocument += "<HIGHLIMIT>" + range.to + "</HIGHLIMIT>";
+            temp = $("#mkt").jqxSwitchButton('val');
+            if (temp === false) temp = "AVERAGE";
+            else temp = "MKT";
+            xmlDocument += "<MTYPE>" + temp + "</MTYPE>";
+            xmlDocument += "</SENSOR>";
+            if (sensorpage === "1")
+                xmlsend = "sensor1.sva" + getstring();
+            else if (sensorpage === "2")
+                xmlsend = "sensor2.sva" + getstring();
+            else if (sensorpage === "3")
+                xmlsend = "sensor3.sva" + getstring();
+            else if (sensorpage === "4")
+                xmlsend = "sensor4.sva" + getstring();
+            else if (sensorpage === "5")
+                xmlsend = "sensor5.sva" + getstring();
+            else if (sensorpage === "6")
+                xmlsend = "sensor6.sva" + getstring();
+            else if (sensorpage === "7")
+                xmlsend = "sensor7.sva" + getstring();
+            else if (sensorpage === "8")
+                xmlsend = "sensor8.sva" + getstring();
+            $.ajax({
+                url: xmlsend,
+                type: "POST",
+                contentType: "text/xml",
+                processData: false,
+                data: xmlDocument,
+                //error:function(xhr,err,e){ alert( "Error: " + err ); }
+                success: function () { alert('Podaci spremljeni'); },
+                error: function () { alert('Greska'); }
+            });
+        }/***** SendData() *****/
+
+
+
+
+    </script><!--kraj AJAX-->
+
+    <style type="text/css">
+        <!--
+        body,
+        td,
+        th {
+            font-family: arial;
+            color: #000;
+            font-size: 14px;
+        }
+
+        body {
+            background-color: #FFF;
+            text-align: center;
+        }
+        -->
+    </style>
+</head>
+
+<body class="backcolor" onLoad="OnLoad()">
+    <div id='content'>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                loadmenu();
+                $("#Spremi").jqxButton({ width: '150', height: '25px' });
+                $('#Spremi').on('click', function () { SendData(); });
+                $("#Temprange").jqxRangeSelector({
+                    width: 500,
+                    height: 10,
+                    min: -40,
+                    max: 80,
+                    range: { from: 20, to: 37 },
+                    majorTicksInterval: 10,
+                    minorTicksInterval: 1
+                });
+                $("#Temphist").jqxNumberInput({
+                    width: '70px',
+                    height: '25px',
+                    inputMode: 'simple',
+                    decimalDigits: 0,
+                    min: 0,
+                    max: 10,
+                    spinButtons: true
+                });
+                $("#Kalib").jqxNumberInput({
+                    width: '70px',
+                    height: '25px',
+                    inputMode: 'simple',
+                    decimalDigits: 1,
+                    min: -5,
+                    max: 5,
+                    spinButtons: true
+                });
+                $("#Delay").jqxNumberInput({
+                    width: '70px',
+                    height: '25px',
+                    inputMode: 'simple',
+                    decimalDigits: 0,
+                    min: 0,
+                    max: 10800,
+                    spinButtons: true
+                });
+                $("#Kanal").jqxNumberInput({
+                    width: '70px',
+                    height: '25px',
+                    inputMode: 'simple',
+                    decimalDigits: 0,
+                    min: 1,
+                    max: 4,
+                    spinButtons: true
+                });
+                $('#mkt').jqxSwitchButton({
+                    width: '150px',
+                    height: '25px',
+                    onLabel: 'MKT',
+                    offLabel: 'PROSJEK'
+                });
+                $("#sms1").jqxCheckBox({ width: 60, height: 25 });
+                $("#sms2").jqxCheckBox({ width: 60, height: 25 });
+                $("#sms3").jqxCheckBox({ width: 60, height: 25 });
+                $("#sms4").jqxCheckBox({ width: 60, height: 25 });
+                $("#sms5").jqxCheckBox({ width: 60, height: 25 });
+                $("#wapp1").jqxCheckBox({ width: 60, height: 25 });
+                $("#wapp2").jqxCheckBox({ width: 60, height: 25 });
+                $("#wapp3").jqxCheckBox({ width: 60, height: 25 });
+                $("#wapp4").jqxCheckBox({ width: 60, height: 25 });
+                $("#wapp5").jqxCheckBox({ width: 60, height: 25 });
+                $("#sonoff").jqxCheckBox({ width: 60, height: 25 });
+                $('#sonoff').on('checked', function (event) { $("#edit").show(); });
+                $('#sonoff').on('unchecked', function (event) { $("#edit").hide(); });
+            }
+            );
+
+        </script>
+
+        <div class="logo_row">
+            <div class="logo_left"><img src="logot.gif" /></div>
+            <div class="logo_center">
+                <h2 class="webenergy">WEBTERMO</h2>
+            </div>
+            <div class="logo_right"></div>
+        </div>
+        <div id='jqxMenu'></div>
+        <div style="height:20px"></div>
+    </div>
+    <div align="center">
+        <table width="300">
+            <tr>
+                <td>
+                    <div id='sName' class="div_font_hd1" align="center"></div>
+                </td>
+                <td>
+                    <div id='sonoff' style='margin-left: 10px; float: left;'>
+                        <span class="div_font_hd2">SENZOR AKTIVAN</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="height:10px"></div>
+    <div id='edit'>
+        <div align="center">
+            <table>
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Naziv senzora</td>
+                    <td><input name="Naziv" type="text" id="naziv" size="30" maxlength="24" /></td>
+                </tr>
+                <tr>
+                    <td style="height:20px;"></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Serijski broj</td>
+                    <td><input name="serialnum" type="text" id="serialnum" size="30" maxlength="16" /></td>
+                </tr>
+                <tr>
+                    <td style="height:20px;"></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Temperatura [C]</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='Temprange'>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:20px;"></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Histereza [C]</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='Temphist'>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:20px;"></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Kalibracija [C]</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='Kalib'>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:20px;"></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Delay [s]</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='Delay'>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:20px;"></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Kanal</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='Kanal'>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:20px;"></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor="#F0F4FA">
+                    <td class="div_font_hd2">Tip mjerenja</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='mkt'>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="height:20px"></div>
+        <div align="center">
+            <table bgcolor="#F0F4FA">
+                <tr>
+                    <td class="div_font_hd2">SMS 1
+                    <td>
+                    <td class="div_font_hd2">SMS 2
+                    <td>
+                    <td class="div_font_hd2">SMS 3
+                    <td>
+                    <td class="div_font_hd2">SMS 4
+                    <td>
+                    <td class="div_font_hd2">SMS 5
+                    <td>
+                    <td class="div_font_hd2">WApp 1
+                    <td>
+                    <td class="div_font_hd2">WApp 2
+                    <td>
+                    <td class="div_font_hd2">WApp 3
+                    <td>
+                    <td class="div_font_hd2">WApp 4
+                    <td>
+                    <td class="div_font_hd2">WApp 5
+                    <td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id='sms1' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='sms2' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='sms3' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='sms4' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='sms5' style='margin-left: 10px; float: left;'>
+                    <td>
+
+                    <td>
+                        <div id='wapp1' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='wapp2' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='wapp3' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='wapp' style='margin-left: 10px; float: left;'>
+                    <td>
+                    <td>
+                        <div id='wapp5' style='margin-left: 10px; float: left;'>
+                    <td>
+                </tr>
+
+            </table>
+        </div>
+    </div>
+    <div style="height:20px"></div>
+    <div align="center"> <input type="button" value="Spremi" id='Spremi' /></div>
+</body>
+
+</html>

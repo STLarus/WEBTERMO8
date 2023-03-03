@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>OnLoad</title>
+<link rel="stylesheet" type="text/css" href="default.css">
+<!--POCETAK AJAX-->
+<script language="javascript" src="jquery.js"></script>
+<script language="javascript">
+	
+var vNAME= new Array;	
+var vSIZE= new Array;
+var vDATE= new Array;	
+var vTEXT=new Array;
+var vTIME=new Array;			
+function OnLoad()
+{
+loadData();
+//setInterval("loadTime()", 1000);
+}
+
+function DeleteFile(trow)
+{
+	var vName="FNAME"+trow;
+	var Kota;
+$(document).ready(function() {
+			Kota=$("#"+vName).text();
+			});
+xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
+xmlDocument+="<DISK0>";
+xmlDocument+="<FNAME>"+Kota+"</FNAME>";
+xmlDocument+="</DISK0>";
+
+$.ajax({ 
+	url: "delfile0.sva", 
+	type: "POST", 
+	contentType: "text/xml", 
+	processData: false, 
+	data: xmlDocument, 
+	//error:function(xhr,err,e){ alert( "Error: " + err ); }
+	success: function(){alert('success');},
+  	error: function(){alert('failure');}
+	});
+}/***** DeleteFile() *****/
+
+
+//*************************************************
+function loadData()
+//*************************************************
+{
+$(document).ready(function(){
+	$.ajax({
+		type: "GET",
+		url: "disk0.xml?sid="+Math.random(),
+		dataType: "xml",
+		cache: false,
+		success: function(xml){
+				$(xml).find('LF').each(function(index){	
+					vDATE[index]=$(this).find('DT').text();
+					vSIZE[index]=$(this).find('SZ').text();
+					vNAME[index]=$(this).find('NM').text();
+					vTIME[index]=$(this).find('TM').text();
+					var idName="FNAME"+index;
+					vTEXT='<tr><td id="'+idName+'"><div align="center">'+vNAME[index]+'</div></td>';
+					vTEXT+='<td><div align="center">'+vDATE[index]+'</div></td>';
+					vTEXT+='<td><div align="center">'+vTIME[index]+'</div></td>';
+					vTEXT+='<td><div align="center">'+vSIZE[index]+'</div></td>';
+					vTEXT+='<td><div align="center">';
+					vTEXT+='<input name="Del" type="button" id="botun" onclick="DeleteFile('+(index)+')" value="Delete" />';
+					vTEXT+='</div></td></tr>';
+					$("#mare").append(vTEXT);
+					index++;														
+				});
+				$(xml).find('DINFO').each(function(index){	
+					vDSIZE=$(this).find('SIZE').text();
+					vDFREE=$(this).find('FREE').text();
+					vDZAUZETO=vDSIZE-vDFREE;
+					$("#nKap").text("Kapacitet  " + vDSIZE+" [KB]");
+					$("#nSlob").text("Slobodno  " + vDFREE+" [KB]");
+					$("#nZauz").text("Zauzeto  " + vDZAUZETO+" [KB]");
+				});
+			}
+		});
+	});
+}/***** loadData() *****/
+
+</script>
+</head>
+<style type="text/css">
+<!--
+body,td,th {
+	font-family: arial;
+	font-size: 14px;
+}
+-->
+</style>
+<body onLoad="OnLoad()" >
+
+<form name="form1" method="post" action="">
+
+<p align="center">Disk 0 </p>
+<table name="fstate" id="fstate" width="46%"  border="0" align="center">
+  <tr>
+    <td id="nKap">Kapacitet  </td>
+    <td id="nZauz">Zauzeto  </td>
+    <td id="nSlob">Slobodno </tr>
+</table>
+<p>&nbsp;</p>
+<table name="mare" id="mare" width="40%"  border="0" align="center" >
+  <tr>
+    <th scope="col">Ime </th>
+    <th scope="col">Datum</th>
+    <th scope="col">Vrijeme</th>	
+    <th scope="col">Broj bajtova</th>
+    <th scope="col">&nbsp;</th>
+  </tr>
+
+</table>
+<p>&nbsp;</p>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<!DOCTYPE html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+<title>Untitled Document</title>
+    <link rel="stylesheet" href="jqxbase.css" type="text/css" />
+    <link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+    <link rel="stylesheet" href="still.css" type="text/css" />
+    <script type="text/javascript" src="jquery.js"></script>    
+    <script type="text/javascript" src="demos.js"></script>
+    <script type="text/javascript" src="jqx_all.js"></script>
+    <script type="text/javascript" src="jqxgrid_all.js"></script>
+    <script type="text/javascript" src="jqxexport_all.js"></script>
+    <script type="text/javascript" src="jqxgridfilter.js"></script> 
+    <script type="text/javascript" src="jqxlistbox.js"></script>
+    <script type="text/javascript" src="jqxgrid_sort.js"></script>
+    
+    <script type="text/javascript" src="pass.js"></script>
+
+<script type="text/javascript">
+var strYear=new Array();
+var strMonth=new Array();
+var strDate=new Array();
+var strHour=new Array();
+var strMin=new Array();
+var strSec=new Array();
+var strT1=new Array();
+var strT2=new Array();
+var strT3=new Array();
+var strT4=new Array();
+var strT5=new Array();
+var strT6=new Array();
+var strT7=new Array();
+var strT8=new Array();
+var strLista=new Array();
+var atlArray = new Array(8);
+var tdata=new Array();
+var csvDocument;
+var S1NAME,S2NAME,S3NAME,S4NAME,S5NAME,S6NAME,S7NAME,S8NAME;
+var atlArray = new Array(8);
+var numrows,dispvalue;
+var vLOG= new Array;
+var cnt,numfiles;
+var tlink,tmonth,tyear,tsort;
+var oldyear;
+var tlog  = new Array();
+var mindatetime=0;
+var maxdatetime=0;
+var gs =[];
+
+function sortIndex(a,b)
+{return ((a[0] < b[0]) ? -1 : ((a[0] > b[0]) ? 1 : 0));}
+
+
+function sortdatetime(a,b) {
+{return ((a[0] < b[0]) ? -1 : ((a[0] > b[0]) ? 1 : 0));}
+}
+
+function retmonth(mnum)
+{
+if(mnum===1) return "Siječanj";
+else if(mnum===2) return "Veljača";
+else if(mnum===3) return "Ožujak";
+else if(mnum===4) return "Travanj";
+else if(mnum===5) return "Svibanj";
+else if(mnum===6) return "Lipanj";
+else if(mnum===7) return "Srpanj";
+else if(mnum===8) return "Kolovoz";
+else if(mnum===9) return "Rujan";
+else if(mnum===10) return "Listopad";
+else if(mnum===11) return "Studeni";
+else if(mnum===12) return "Prosinac";
+}
+
+function OnLoad()
+{
+$('#chart_div').hide();  
+loadData();
+}
+
+//*************************************************
+function loadData()
+//*************************************************
+{
+var fname;
+$(document).ready(function(){
+    $.ajax({
+        type: "GET",
+        url: "logfile.xml?sid="+Math.random(),
+        dataType: "xml",
+        cache: false,
+            success: function(xml){
+                $(xml).find('SENZOR').each(function(index){
+                    S1NAME=$(this).find('SEN1').text();
+                    S2NAME=$(this).find('SEN2').text();
+                    S3NAME=$(this).find('SEN3').text();
+                    S4NAME=$(this).find('SEN4').text();
+                    S5NAME=$(this).find('SEN5').text();
+                    S6NAME=$(this).find('SEN6').text();
+                    S7NAME=$(this).find('SEN7').text();
+                    S8NAME=$(this).find('SEN8').text();                
+                    });                
+                    numfiles=0;
+                    $(xml).find('LF').each(function(index){
+                        numfiles++;
+                        tlink=$(this).find('LOG').text();
+                        tmonth=Number(tlink.substring(1,3));
+                        tyear=Number(tlink.substring(3,5))+2000;
+                        tsort=tyear*12+tmonth; //broj mjeseci za sortiranje
+                        tlog.push([tsort,tmonth,tyear,tlink]);
+                    });
+                tlog.sort(sortIndex);
+                oldeyear=0;
+                $('#lista').empty();
+                for(cnt=0;cnt<numfiles;cnt++)
+                    {
+                    misec=retmonth(tlog[cnt][1]);
+                    if(oldyear!==tlog[cnt][2]){
+                        if(oldyear!==0)
+                            strLista=strLista+'</div>';
+                        fname=tlog[cnt][3];
+                        strLista=strLista+'<p class="menu_head">'+tlog[cnt][2]+'</p><div class="menu_body"><a href="#" onclick=loadGraph("'+fname+'")>'+misec+'</a>';
+                        oldyear=tlog[cnt][2];
+                        }
+                    else{
+                        fname=tlog[cnt][3];
+                        strLista=strLista+'<a href="#" onclick=loadGraph("'+fname+'")>'+misec+'</a>';
+                        }
+                    } 
+                strLista=strLista+'</div>';
+                $('#lista').empty();
+                $('#lista').html(strLista);
+                $("#lista p.menu_head").mouseover(function()
+                    {
+                    $(this).addClass("menu_head").next("div.menu_body").slideDown(400).siblings("div.menu_body").slideUp("slow");
+                    $(this).siblings().css({backgroundImage:"url(crta3.png)"});
+                    });
+            }
+        });
+    });
+}/***** loadData() *****/
+
+//*************************************************
+function SaveToDisk()
+//*************************************************
+{
+
+csvDocument=$("#tablica").jqxGrid('exportdata', 'csv');
+var downloadLink = document.createElement("a");
+var blob = new Blob(["\ufeff", csvDocument]);
+var url = URL.createObjectURL(blob);
+downloadLink.href = url;
+downloadLink.download = "webtermo.csv";
+
+document.body.appendChild(downloadLink);
+downloadLink.click();
+document.body.removeChild(downloadLink);
+} 
+
+
+//*************************************************
+function prikazi()
+//*************************************************
+{
+var recount=0;
+var strtime;
+var strhigh,strlow;
+var vallow=10,valhigh=20;
+var cosphi;
+
+height=$(document).height()-200;
+width=$(document).width()-100;
+sumprice=0;
+for (n=0;n<numrows;n++)
+	{
+        var row={};
+        row["datum"]=strDate[n]+'.'+strMonth[n]+'.'+strYear[n];;
+        row["vrijeme"]=strHour[n]+':'+strMin[n]+':'+strSec[n];
+        row["S1temp"]=strT1[n];
+        row["S2temp"]=strT2[n];        
+        row["S3temp"]=strT3[n];
+        row["S4temp"]=strT4[n];
+        row["S5temp"]=strT5[n];
+        row["S6temp"]=strT6[n];        
+        row["S7temp"]=strT7[n];
+        row["S8temp"]=strT8[n];           
+        tdata[n]=row;    
+        }
+$("#applyfilter").jqxButton({ theme: theme });
+
+var blockRedraw = false;
+var initialized = false;
+
+var source =
+{
+localdata: tdata,
+datatype: "array",
+datafields:
+    [
+    { name: 'datum', type: 'string' },
+    { name: 'vrijeme', type: 'string' },
+    { name: 'S1temp', type: 'number' },
+    { name: 'S2temp', type: 'number' },
+    { name: 'S3temp', type: 'number' },
+    { name: 'S4temp', type: 'number' },
+    { name: 'S5temp', type: 'number' },
+    { name: 'S6temp', type: 'number' }, 
+    { name: 'S7temp', type: 'number' },
+    { name: 'S8temp', type: 'number' },     
+    ]
+};
+var dataAdapter = new $.jqx.dataAdapter(source);
+$("#applyfilter").show();    
+$("#print").show();
+$("#excel").show();
+$("#tablica").jqxGrid(
+    {
+    height:500,
+    rowsheight: 20,
+    width: 770,
+    //autoheight:true,
+    source: dataAdapter,
+    sortable: true,
+    columnsresize: true,               
+    showstatusbar: true,
+    statusbarheight: 10,   
+    //showaggregates: true,
+    columns: [
+        { text: 'Datum', dataField: 'datum', width: 60,cellsalign: 'center'},
+        { text: 'Vrijeme', dataField: 'vrijeme', width: 60 , cellsalign: 'center' },
+        { text: S1NAME, editable: false, dataField: 'S1temp', width: 80 , cellsalign: 'center',cellsformat: 'd2' },
+        { text: S2NAME, editable: false, dataField: 'S2temp', width: 80, cellsalign: 'center',cellsformat: 'd2'},
+        { text: S3NAME, editable: false, dataField: 'S3temp', width: 80 , cellsalign: 'center',cellsformat: 'd2'},
+        { text: S4NAME, editable: false, dataField: 'S4temp', width: 80 , cellsalign: 'center',cellsformat: 'd2'},
+        { text: S5NAME, editable: false, dataField: 'S5temp', width: 80 , cellsalign: 'center',cellsformat: 'd2'},
+        { text: S6NAME, editable: false, dataField: 'S6temp', width: 80 , cellsalign: 'center',cellsformat: 'd2'},
+        { text: S7NAME, editable: false, dataField: 'S7temp', width: 80 , cellsalign: 'center',cellsformat: 'd2' },
+        { text: S8NAME, editable: false, dataField: 'S8temp', width: 80 , cellsalign: 'center',cellsformat: 'd2' }
+         ]
+    });    
+$("#tablica .jqx-widget-content").css("font-size","10px");        //font size
+
+
+$("#filterbox").jqxListBox({ checkboxes: true,  width: 150, height:300 });
+
+        var updateFilterBox = function (datafield) {
+    var filterBoxAdapter = new $.jqx.dataAdapter(source,
+        {
+        uniqueDataFields: [datafield],
+        autoBind: true
+        });
+    var uniqueRecords = filterBoxAdapter.records;
+    uniqueRecords.splice(0, 0, '(Select All)');
+    $("#filterbox").jqxListBox({ source: uniqueRecords, displayMember: datafield });
+    $("#filterbox").jqxListBox('checkAll');
+    };
+
+updateFilterBox('datum');
+
+
+var handleCheckChange = true;
+$("#filterbox").on('checkChange', function (event) {
+    if (!handleCheckChange)
+        return;
+    if (event.args.label != '(Select All)') {
+        handleCheckChange = false;
+        $("#filterbox").jqxListBox('checkIndex', 0);
+        var checkedItems = $("#filterbox").jqxListBox('getCheckedItems');
+        var items = $("#filterbox").jqxListBox('getItems');
+        if (checkedItems.length == 1) {
+            $("#filterbox").jqxListBox('uncheckIndex', 0);
+            }
+        else if (items.length != checkedItems.length) {
+            $("#filterbox").jqxListBox('indeterminateIndex', 0);
+            }
+        handleCheckChange = true;
+        }
+    else {
+        handleCheckChange = false;
+        if (event.args.checked) {
+            $("#filterbox").jqxListBox('checkAll');
+            }
+        else {
+            $("#filterbox").jqxListBox('uncheckAll');
+            }
+        handleCheckChange = true;
+        }
+    });
+          
+var applyFilter = function (datafield) {
+    $("#tablica").jqxGrid('clearfilters');
+    var filtertype = 'stringfilter';
+    var filtergroup = new $.jqx.filter();
+    var checkedItems = $("#filterbox").jqxListBox('getCheckedItems');
+    if (checkedItems.length == 0) {
+        var filter_or_operator = 1;
+        var filtervalue = "Empty";
+        var filtercondition = 'equal';
+        var filter = filtergroup.createfilter(filtertype, filtervalue, filtercondition);
+        filtergroup.addfilter(filter_or_operator, filter);
+        }
+    else {
+        for (var i = 0; i < checkedItems.length; i++) {
+            var filter_or_operator = 1;
+            var filtervalue = checkedItems[i].label;
+            var filtercondition = 'equal';
+            var filter = filtergroup.createfilter(filtertype, filtervalue, filtercondition);
+            filtergroup.addfilter(filter_or_operator, filter);
+            }
+        }
+    // add the filters.
+    $("#tablica").jqxGrid('addfilter', datafield, filtergroup);
+    // apply the filters.
+    $("#tablica").jqxGrid('applyfilters');
+    }
+    
+$("#applyfilter").click(function () {
+    applyFilter('datum');
+    });
+    
+$("#print").jqxButton();
+$("#print").click(function () {
+var gridContent = $("#tablica").jqxGrid('exportdata', 'html');
+var newWindow = window.open('', '', 'width=800, height=500'),
+    document = newWindow.document.open(),
+     pageContent =
+        '<!DOCTYPE html>\n' +
+        '<html>\n' +
+        '<head>\n' +
+        '<meta charset="utf-8" />\n' +
+        '<title>WEBTERMO tablica temperature</title>\n' +
+        '</head>\n' +
+        '<body>\n' + gridContent + '\n</body>\n</html>';
+        document.write(pageContent);
+        document.close();
+        newWindow.print();
+        });
+$("#excel").jqxButton();        
+$("#excel").click(function () {
+    SaveToDisk();
+    //$("#tablica").jqxGrid('exportdata', 'xls', 'jqxGrid');  
+    //$("#tablica").jqxGrid('exportdata', 'csv', 'jqxGrid');    
+});
+   
+
+}/***** prikazi() *****/
+
+//*************************************************
+function loadGraph(trow)
+//*************************************************
+{
+var i,j;
+var width,height;
+var tmp=new Array();
+var csvdata=new Array();
+var jure=new Array();
+var vName="FNAME"+trow;
+$('#lista').hide();
+var strtemp;
+$(document).ready(function(){
+       var Kota=$("#"+vName).text();
+       var Kota=trow+"?sid="+Math.random();
+       $.get(Kota, function(data) {
+            var len = data.length;
+            j=0;
+            for (i = 0; i < len; i++) {
+                if (data[i] == "\r") 
+                    tmp[j++] = ';TAG;'
+                else if (data[i] == ":") 
+                    tmp[j++] = ';'
+                else if (data[i] != "\n") 
+                    tmp[j++] = data[i];
+                }
+                len = tmp.length;
+                for (i = 0; i < len; i++)
+                    jure = jure+tmp[i];
+                var csvdata = String(jure).split(';');	
+                //var numrows=(csvdata.length-13)/8;
+                var firsttag=0;
+                    numrows=0;
+            for (i = 0; i < csvdata.length-6; i++) {
+                if(csvdata[i]=="TAG")	
+                   {//nasao pocetak reda
+                    if(firsttag==0)
+                        firsttag=1;	//preskace prvi red sa zaglavljem
+                    else
+                        {						
+                        strYear[numrows]=csvdata[3];
+                        strMonth[numrows]=csvdata[1];
+                        strDate[numrows]=csvdata[i+1];
+                        strHour[numrows]=csvdata[i+2];
+                        strMin[numrows]=csvdata[i+3];
+                        strSec[numrows]=csvdata[i+4];
+                        var tstr=csvdata[i+5];
+                        tstr=tstr.replace(",", ".");
+                        strT1[numrows]=parseFloat(tstr);
+                        tstr=csvdata[i+6];
+                        tstr=tstr.replace(",", ".");
+                        strT2[numrows]=parseFloat(tstr);
+                        tstr=csvdata[i+7];
+                        tstr=tstr.replace(",", ".");
+                        strT3[numrows]=parseFloat(tstr);  
+                        tstr=csvdata[i+8];
+                        tstr=tstr.replace(",", ".");
+                        strT4[numrows]=parseFloat(tstr); 
+                        tstr=csvdata[i+9];
+                        tstr=tstr.replace(",", ".");
+                        strT5[numrows]=parseFloat(tstr);
+                        var tstr=csvdata[i+10];
+                        tstr=tstr.replace(",", ".");
+                        strT6[numrows]=parseFloat(tstr);
+                        var tstr=csvdata[i+11];
+                        tstr=tstr.replace(",", ".");
+                        strT7[numrows]=parseFloat(tstr);  
+                        var tstr=csvdata[i+12];
+                        tstr=tstr.replace(",", ".");
+                        strT8[numrows]=parseFloat(tstr); 
+                        if (isNaN(strT1[numrows])) 
+                                strT1[numrows] = 0;
+                        if (isNaN(strT2[numrows])) 
+                                strT2[numrows] = 0;
+                        if (isNaN(strT3[numrows])) 
+                                strT3[numrows] = 0;
+                        if (isNaN(strT4[numrows])) 
+                                strT4[numrows] = 0;
+                        if (isNaN(strT5[numrows])) 
+                                strT5[numrows] = 0;
+                        if (isNaN(strT6[numrows])) 
+                                strT6[numrows] = 0;
+                        if (isNaN(strT7[numrows])) 
+                                strT7[numrows] = 0;
+                        if (isNaN(strT8[numrows])) 
+                                strT8[numrows] = 0;
+                        numrows++;
+                        }
+                    }
+                }
+            prikazi();
+        });
+    });
+}/***** loadCode() *****/
+
+
+
+
+
+</script>
+</head>
+
+<body class="backcolor" onLoad="OnLoad()" >
+    <div id='content'></div>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#applyfilter").hide();    
+            $("#print").hide();
+            $("#excel").hide();
+            loadmenu();
+           });            
+
+    </script>
+    <div class="logo_row">
+        <div class="logo_left"><img src="logot.gif" /></div>
+       <div class="logo_center"><h2 class="webenergy">WEBTERMO</h2></div>
+        <div class="logo_right"></div>
+    </div>
+    <div id='jqxMenu'></div>
+    <div style="height:50px;" ></div>
+<div id="lista" align="center" class="menu_list"></div>
+<div id="filterbox" class="div_left"></div>
+<div style="margin-top: 10px;">
+    <input type="button" id="applyfilter" value="Osvježi" />
+    <input type="button" id="print" value="Ispis" />   
+    <input type="button" id="excel" value="Excel" />    
+</div>
+<div id="tablica" class="div_center"></div>
+</body>
+</html>
+

@@ -1,0 +1,86 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<style>
+
+.label{
+    font-family:Verdana, Arial, Helvetica, sans-serif;
+    font-size:11px;
+    color:#2F6F93;
+}
+.tableBorder{
+    border:solid 1px #2F6F93;
+    margin-top:100px;
+}
+.message{
+    font-family:Verdana, Arial, Helvetica, sans-serif;
+    font-size:14px;
+    font-weight:bold;
+    color:#2F6F93;
+}
+
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Login to Website</title>
+
+<!--<link href="css/style.css" rel="stylesheet" type="text/css" />-->
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="pass.js"></script>
+<script type="text/javascript">
+
+
+
+	
+function fnLogin()
+{
+var ime=$("#uname").val();
+var pas=$("#pass").val();
+savepass(ime, pas);
+$("body").empty();
+var strhtml="index.html?"+getstring();
+window.open(strhtml,'_self',false);
+}
+
+
+</script>
+</head>
+<body>
+    <div id="maindiv">
+<table cellpadding="2px" cellspacing="1px" bgcolor="#F7FFFF" width="400px" class="tableBorder" align="center">
+    <tr>
+        <td colspan="2" bgcolor="#2F6F93">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="2" class="label">&nbsp;</td>
+    </tr>
+   
+    <tr>
+        <td align="center" colspan="2">
+            <!--<img src="locked.png" border="0" align="absbottom"/>&nbsp;-->
+            <span class="message">Login to Webtermo</span>
+        </td>
+    </tr>                  
+    <tr>
+        <td colspan="2" class="label">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="label" align="right" width="40%">Username:</td>
+        <td align="left"  width="60%"><input type="text" id="uname" name="username" maxlength="20"/></td>
+    </tr>
+    <tr>
+        <td class="label" align="right">Password:</td>
+        <td align="left"><input type="password" id="pass" name="password" maxlength="20" /></td>
+    </tr>
+    <tr>
+        <td class="label" align="right">&nbsp;</td>
+        <td align="left"><input type="submit" value="Login" onclick="fnLogin()"/></td>
+    </tr>                  
+    <tr>
+        <td colspan="2" class="label">&nbsp;</td>
+    </tr>                  
+</table>
+    </div>
+</body>
+</html>
+

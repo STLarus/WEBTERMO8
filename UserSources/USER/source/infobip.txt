@@ -1,0 +1,23 @@
+POST /api/sendsms/xml HTTP/1.1
+Host: api2.infobip.com
+Accept: */*
+Content-Length: 541
+Content-Type: application/x-www-form-urlencoded
+
+url encoded string šalje u drugom paketu
+
+XML=%3CSMS%3E+%0D%0A++++%3Cauthentification%3E+%0D%0A++++++%3Cusername%3Exxx%3C%2Fusername%3E+%0D%0A++++++%3Cpassword%3Exxxx%3C%2Fpassword%3E+%0D%0A++++%3C%2Fauthentification%3E+%0D%0A++++%3Cmessage%3E+%0D%0A++++++%3Csender%3EFriend%3C%2Fsender%3E+%0D%0A++++++%3Ctext%3EMessage+from+your+friend%21%3C%2Ftext%3E+%0D%0A++++%3C%2Fmessage%3E+%0D%0A++%3Crecipients%3E+%0D%0A++++%3Cgsm%3E38598514674%3C%2Fgsm%3E+%0D%0A++++%3Cgsm%3E38591222344%3C%2Fgsm%3E+%0D%0A++++%3Cgsm%3E385956773453%3C%2Fgsm%3E+%0D%0A++%3C%2Frecipients%3E+%0D%0A++%3C%2FSMS%3E
+
+
+odgovor sa servera
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Cache-Control: private
+Content-Encoding: UTF-8
+Content-Type: text/html;charset=iso-8859-1
+Content-Length: 68
+Date: Sat, 29 Sep 2012 18:56:48 GMT
+Connection: close
+
+<RESPONSE><status>-1</status><credits>0.0000</credits></RESPONSE>
