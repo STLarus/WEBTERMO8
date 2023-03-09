@@ -19,15 +19,22 @@ PT_THREAD( ptMQTT(struct pt*));
  * to connect anything else than IPv4 loopback
  */
 //192.168.0.100
-#define MQTTSERVER_IP	((u32_t)0xC0A80064UL)
+//#define MQTTSERVER_IP	((u32_t)0xC0A80064UL)
 //192.168.1.100
 //#define MQTTSERVER_IP	((u32_t)0xC0A80164UL)
-//192.168.1.103
-//#define MQTTSERVER_IP	((u32_t)0xC0A80167UL)
+//192.168.1.104
+//#define MQTTSERVER_IP	((u32_t)0xC0A80168UL)
 //5.196.95.208	test.mosquitto.org
 //#define MQTTSERVER_IP	((u32_t)0x05C45FD0UL)
-// HIVEmq  broker. hivemq.com   18.158.198.79
+// HIVEmq  broker. hivemq.com   18.158.198.79 ovaj izgleda ne radi više ????
 //#define MQTTSERVER_IP	((u32_t)0x129EC64FUL)
+
+// HIVEmq  broker. hivemq.com   18.193.153.59
+//#define MQTTSERVER_IP	((u32_t)0x12C1993BUL)
+
+// HIVEmq  broker.emqx.io   54.87.92.106		36.57.5c.6a (0x36575c6a)
+#define MQTTSERVER_IP	((u32_t)0x36575c6aUL)
+
 
 #define  LWIP_MQTT_EXAMPLE_IPADDR_INIT= IPADDR4_INIT(PP_HTONL(MQTTSERVER_IP))
 
@@ -68,8 +75,8 @@ static mqtt_client_t *mqtt_client;
 
 static const struct mqtt_connect_client_info_t mqtt_client_info =
     {
-    "test", "larus", /* user */
-    "peljescanka", /* pass */
+    "esp32/test", "emqx", /* user */
+    "public", /* pass */
     100, /* keep alive */
     NULL, /* will_topic */
     NULL, /* will_msg */
@@ -80,6 +87,21 @@ static const struct mqtt_connect_client_info_t mqtt_client_info =
   , NULL
 #endif
 	};
+
+//static const struct mqtt_connect_client_info_t mqtt_client_info =
+//    {
+//    "test", "larus", /* user */
+//    "peljescanka", /* pass */
+//    100, /* keep alive */
+//    NULL, /* will_topic */
+//    NULL, /* will_msg */
+//    0, /* will_qos */
+//    0
+//    /* will_retain */
+//#if LWIP_ALTCP && LWIP_ALTCP_TLS
+//  , NULL
+//#endif
+//	};
 
 static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len,
 	u8_t flags)
@@ -197,7 +219,7 @@ void mqtt_connect()
 	else
 	    {
 	    MqttPublish(1);
-	    //MqttPublish(2);
+	    MqttPublish(2);
 	    }
 	}
 
@@ -223,11 +245,11 @@ PT_THREAD(ptMQTT(struct pt *pt))
     timer_set(&mqttTimer, 30000);
     PT_WAIT_UNTIL(pt, timer_expired(&mqttTimer));
     mqtt_connect();
-    MqttPublish(1);
+    //MqttPublish(1);
     timer_set(&mqttTimer, 20000);
-    PT_WAIT_UNTIL(pt, timer_expired(&mqttTimer));
-    MqttPublish(2);
-    timer_set(&mqttTimer, 20000);
+    //PT_WAIT_UNTIL(pt, timer_expired(&mqttTimer));
+    //MqttPublish(2);
+    //timer_set(&mqttTimer, 20000);
     PT_WAIT_UNTIL(pt, timer_expired(&mqttTimer));
 
 PT_END(pt);
