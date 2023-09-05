@@ -12,6 +12,8 @@ struct pt pt_MQTT;
 struct timer mqttTimer;
 
 PT_THREAD( ptMQTT(struct pt*));
+uint8_t mqtt_buf[128];
+ip_addr_t mqtt_ip;
 
 #if LWIP_TCP
 
@@ -19,22 +21,15 @@ PT_THREAD( ptMQTT(struct pt*));
  * to connect anything else than IPv4 loopback
  */
 //192.168.0.100
-//#define MQTTSERVER_IP	((u32_t)0xC0A80064UL)
+#define MQTTSERVER_IP	((u32_t)0xC0A80064UL)
 //192.168.1.100
 //#define MQTTSERVER_IP	((u32_t)0xC0A80164UL)
-//192.168.1.104
-//#define MQTTSERVER_IP	((u32_t)0xC0A80168UL)
+//192.168.1.103
+//#define MQTTSERVER_IP	((u32_t)0xC0A80167UL)
 //5.196.95.208	test.mosquitto.org
 //#define MQTTSERVER_IP	((u32_t)0x05C45FD0UL)
-// HIVEmq  broker. hivemq.com   18.158.198.79 ovaj izgleda ne radi više ????
+// HIVEmq  broker. hivemq.com   18.158.198.79
 //#define MQTTSERVER_IP	((u32_t)0x129EC64FUL)
-
-// HIVEmq  broker. hivemq.com   18.193.153.59
-//#define MQTTSERVER_IP	((u32_t)0x12C1993BUL)
-
-// HIVEmq  broker.emqx.io   54.87.92.106		36.57.5c.6a (0x36575c6a)
-#define MQTTSERVER_IP	((u32_t)0x36575c6aUL)
-
 
 #define  LWIP_MQTT_EXAMPLE_IPADDR_INIT= IPADDR4_INIT(PP_HTONL(MQTTSERVER_IP))
 
@@ -46,9 +41,9 @@ PT_THREAD( ptMQTT(struct pt*));
 #endif
 #endif
 
-static ip_addr_t mqtt_ip LWIP_MQTT_EXAMPLE_IPADDR_INIT
-;
+//static ip_addr_t mqtt_ip LWIP_MQTT_EXAMPLE_IPADDR_INIT;
 static mqtt_client_t *mqtt_client;
+struct mqtt_connect_client_info_t mqtt_client_info;
 
 //http://mqtt-explorer.com/
 //https://delightnet.nl/index.php/mqtt/12-mqtt-broker-installation
@@ -56,7 +51,6 @@ static mqtt_client_t *mqtt_client;
 //https://mcuoneclipse.com/2017/04/09/mqtt-with-lwip-and-nxp-frdm-k64f-board/
 //  T L S   https://mcuoneclipse.com/2017/04/17/tutorial-secure-tls-communication-with-mqtt-using-mbedtls-on-top-of-lwip/
 //  http://www.steves-internet-guide.com/mossquitto-conf-file/
-
 
 //static const struct mqtt_connect_client_info_t mqtt_client_info =
 //    {
@@ -72,21 +66,6 @@ static mqtt_client_t *mqtt_client;
 //  , NULL
 //#endif
 //	};
-
-static const struct mqtt_connect_client_info_t mqtt_client_info =
-    {
-    "esp32/test", "emqx", /* user */
-    "public", /* pass */
-    100, /* keep alive */
-    NULL, /* will_topic */
-    NULL, /* will_msg */
-    0, /* will_qos */
-    0
-    /* will_retain */
-#if LWIP_ALTCP && LWIP_ALTCP_TLS
-  , NULL
-#endif
-	};
 
 //static const struct mqtt_connect_client_info_t mqtt_client_info =
 //    {
@@ -197,35 +176,66 @@ void MqttPublish(uint8_t senzor)
 	printf("Publish err: %d\n", err);
     }
 
+
+
+
+
+
 void mqtt_connect()
     {
     uint8_t netif_state;
+    err_t err;
+    //static const struct mqtt_connect_client_info_t mqtt_client_info;
+
+    strcpy(mqtt_client_info.client_id,"test");
+
+    EEread(EE_MQTT_UNAME, mqtt_buf, 32);
+    strcpy(mqtt_client_info.client_user,mqtt_buf);
+
+    EEread(EE_MQTT_PASS, mqtt_buf, 32);
+    strcpy(mqtt_client_info.client_pass,mqtt_buf);
+
+    mqtt_client_info.keep_alive = EEread_8(EE_MQTT_KEEPALIVE);
+    mqtt_client_info.will_topic =NULL;
+    mqtt_client_info.will_msg =NULL;
+    mqtt_client_info.will_qos =0;
+    mqtt_client_info.will_retain =NULL;
+
+
+
+
+
     netif_state = netif.flags & NETIF_FLAG_LINK_UP;
-    if (netif_state)
+    EEread(EE_MQTT_SERVER, mqtt_buf, 64);
+    err = dns_gethostbyname(mqtt_buf, &mqtt_ip, NULL, NULL);
+    if (err == 0)
 	{
-	if (!mqtt_client_is_connected(mqtt_client))
-	    { //nema konekcije , konektiraj se
-	    mqtt_client = mqtt_client_new();
+	if (netif_state)
+	    {
+	    if (!mqtt_client_is_connected(mqtt_client))
+		{ //nema konekcije , konektiraj se
+		mqtt_client = mqtt_client_new();
 
-	    mqtt_set_inpub_callback(mqtt_client, mqtt_incoming_publish_cb,
-		    mqtt_incoming_data_cb,
-		    LWIP_CONST_CAST(void*, &mqtt_client_info));
+		mqtt_set_inpub_callback(mqtt_client, mqtt_incoming_publish_cb,
+			mqtt_incoming_data_cb,
+			LWIP_CONST_CAST(void*, &mqtt_client_info));
 
-	    mqtt_client_connect(mqtt_client, &mqtt_ip, MQTT_PORT,
-		    mqtt_connection_cb,
-		    LWIP_CONST_CAST(void*, &mqtt_client_info),
-		    &mqtt_client_info);
+		mqtt_client_connect(mqtt_client, &mqtt_ip, MQTT_PORT,
+			mqtt_connection_cb,
+			LWIP_CONST_CAST(void*, &mqtt_client_info),
+			&mqtt_client_info);
+		}
+	    else
+		{
+		MqttPublish(1);
+		//MqttPublish(2);
+		}
 	    }
+
 	else
 	    {
-	    MqttPublish(1);
-	    MqttPublish(2);
+	    mqtt_disconnect(mqtt_client);
 	    }
-	}
-
-    else
-	{
-	mqtt_disconnect(mqtt_client);
 	}
 
     }
@@ -245,11 +255,11 @@ PT_THREAD(ptMQTT(struct pt *pt))
     timer_set(&mqttTimer, 30000);
     PT_WAIT_UNTIL(pt, timer_expired(&mqttTimer));
     mqtt_connect();
-    //MqttPublish(1);
+    MqttPublish(1);
     timer_set(&mqttTimer, 20000);
-    //PT_WAIT_UNTIL(pt, timer_expired(&mqttTimer));
-    //MqttPublish(2);
-    //timer_set(&mqttTimer, 20000);
+    PT_WAIT_UNTIL(pt, timer_expired(&mqttTimer));
+    MqttPublish(2);
+    timer_set(&mqttTimer, 20000);
     PT_WAIT_UNTIL(pt, timer_expired(&mqttTimer));
 
 PT_END(pt);

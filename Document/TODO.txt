@@ -1,0 +1,3 @@
+- test MQTT
+- grafovi prikazuju pogrešan mjesec
+-kad nema senzora osim grške temperatutra treba biti 0

@@ -1,7 +1,8 @@
 #include "stm32f4xx_conf.h"
 
 unsigned int Timex;
-uint32_t LocalTime,sysTyck;
+uint32_t LocalTime,sysTyck,I2CTimer;
+
 struct timer
 	{
 	unsigned int start;
@@ -28,6 +29,8 @@ void IncrementTimer(void)
 Timex++;
 LocalTime=LocalTime+10;
 sysTyck++;
+if(I2CTimer)
+    I2CTimer++;
 }
 
 uint32_t sys_now(void)

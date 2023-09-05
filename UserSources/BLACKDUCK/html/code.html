@@ -45,6 +45,7 @@ $(document).ready(function() {
             loadmenu();
              $("#Code").jqxButton({ width: '150',height: '25px'});
              $('#Code').on('click', function () {loadCode();});
+             $("#codnum").jqxInput({ width: '200px', height: '25px' });
         });
     </script>
     
@@ -57,7 +58,7 @@ $(document).ready(function() {
     <div style="height:40px" ></div>
 </div>	    
   <p align="center">
-    <input name="text" type="text" id="codnum" readonly="true">
+    <input type="text" id="codnum" readonly="true">
   </p>
   <p align="center"><div align="center" > <input type="button" value="Očitaj serijski broj" id='Code' /></div>
 </p>

@@ -1,0 +1,148 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="jqxbase.css" type="text/css" />
+    <link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+    <link rel="stylesheet" href="still.css" type="text/css" />
+
+    </style>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="demos.js"></script>
+    <script type="text/javascript" src="jqx_all.js"></script>
+    <script type="text/javascript" src="pass.js"></script>
+    <script type="text/javascript">
+
+        var normalcolor = "palegreen";
+        var alarmcolor = "lightsalmon";
+
+
+        function OnLoad() {
+            loadOnlineInput();
+            setInterval("loadOnlineInput()", 5000);
+        }
+
+        //*************************************************
+        function loadOnlineInput()
+        //*************************************************
+        {
+
+            $(document).ready(function () {
+                $.ajax({
+                    type: "GET",
+                    url: "onlineinput.xml?sid=" + Math.random(),
+                    dataType: "xml",
+                    cache: false,
+                    success: function (xml) {
+
+
+                        $(xml).find('ONLINE').each(function () {
+
+                            var vName = $(this).find('IN1NAME').text();
+                            $("#name1").text(vName);
+                            var vStatus = $(this).find('STAT1').text();
+                            $("#status1").val(vStatus);
+                            var vAlarm = $(this).find('ALARM1').text();
+                            var vDelay = $(this).find('DELAY1').text();
+                            if (vAlarm === "ALARM")
+                                $('#status1').css('background', alarmcolor);
+                            else
+                                $('#status1').css('background', normalcolor);
+                            if (vAlarm === "ALARM")
+                                $('#delay1').text("DELAY   " + vDelay);
+                            else
+                                $('#delay1').text("");
+
+                            vName = $(this).find('IN2NAME').text();
+                            $("#name2").text(vName);
+                            vStatus = $(this).find('STAT2').text();
+                            $("#status2").val(vStatus);
+                            vAlarm = $(this).find('ALARM2').text();
+                            vDelay = $(this).find('DELAY2').text();
+                            if (vAlarm === "ALARM")
+                                $('#status2').css('background', alarmcolor);
+                            else
+                                $('#status2').css('background', normalcolor);
+                            if (vAlarm === "ALARM")
+                                $('#delay2').text("DELAY   " + vDelay);
+                            else
+                                $('#delay2').text("");
+
+                            vName = $(this).find('IN3NAME').text();
+                            $("#name3").text(vName);
+                            vStatus = $(this).find('STAT3').text();
+                            $("#status3").val(vStatus);
+                            vAlarm = $(this).find('ALARM3').text();
+                            vDelay = $(this).find('DELAY3').text();
+                            if (vAlarm === "ALARM")
+                                $('#status3').css('background', alarmcolor);
+                            else
+                                $('#status3').css('background', normalcolor);
+                            if (vAlarm === "ALARM")
+                                $('#delay3').text("DELAY   " + vDelay);
+                            else
+                                $('#delay3').text("");
+
+
+
+                        });
+                    }
+                });
+            });
+        }/***** loadOnline() *****/
+
+
+    </script>
+</head>
+
+<body onLoad="OnLoad()">
+    <div id='content'>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                loadmenu();
+                $("#status1").jqxInput({ width: '120px', height: '25px' });
+                $("#status2").jqxInput({ width: '120px', height: '25px' });
+                $("#status3").jqxInput({ width: '120px', height: '25px' });
+
+            });
+        </script>
+
+        <div class="logo_row">
+            <div class="logo_left"><img src="logot.gif" /></div>
+            <div class="logo_center">
+                <h2 class="webenergy">WEBTERMO</h2>
+            </div>
+            <div class="logo_right"></div>
+        </div>
+        <div id='jqxMenu'></div>
+        <div style="height:20px"></div>
+    </div>
+
+    <table cellspacing=12 width="400" border="0" align="center">
+        <tr>
+            <td class="div_font_hd2" id="name1">INPUT 1</td>
+            <td><input type="text" id="status1" /></td>
+            <td width="200" class="online_delay">
+                <div id='delay1'></div>
+            </td>
+        </tr>
+        <tr>
+            <td class="div_font_hd2" id="name2">INPUT 2</td>
+            <td><input type="text" id="status2" /></td>
+            <td width="200" class="online_delay">
+                <div id='delay2'></div>
+            </td>
+        </tr>
+        <tr>
+            <td class="div_font_hd2" id="name3">INPUT 3</td>
+            <td><input type="text" id="status3" /></td>
+            <td width="200" class="online_delay">
+                <div id='delay3'></div>
+            </td>
+        </tr>
+
+    </table>
+
+
+</body>
+
+</html>

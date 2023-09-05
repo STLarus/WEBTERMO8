@@ -16,7 +16,6 @@
 #define SLAVE_ADDRESS 0x50      //A0 je prava adresa, ovo je pomaknuto za 1 u desno
 #define I2C_PORT    I2C1
 
-
 #define	DS2482		0x30
 #define I2CREAD		1
 #define I2CWRITE	0
@@ -49,6 +48,11 @@
 #define	LED_ON		GPIO_ResetBits(GPIOE, GPIO_Pin_8)
 #define LED_OFF		GPIO_SetBits(GPIOE, GPIO_Pin_8)
 
+#define SDA_0()        GPIO_ResetBits(GPIOB,GPIO_Pin_7)
+#define SDA_1()      GPIO_SetBits(GPIOB,GPIO_Pin_7)
+#define SCL_0()        GPIO_ResetBits(GPIOB,GPIO_Pin_6)
+#define SCL_1()      GPIO_SetBits(GPIOB,GPIO_Pin_6)
+
 // **************** I2C1 DEFINICIJE
 //#define		BIT6        0x0040
 //#define  	BIT7        0x0080
@@ -67,8 +71,7 @@
 #define ACK		0
 #define NACK	1
 
-//#define	I2C1GetByte()		_I2C1GetByte(0)
-//#define	I2C1GetLastByte()	_I2C1GetByte(1)
+extern uint32_t I2CTimer;
 
 UINT16 delay_count;
 unsigned char I2CBuf[10];
@@ -222,19 +225,17 @@ unsigned char DS2482_channel_select(unsigned char chnl)
     return adrs;
     }/***** DS2482_channel_select() *****/
 
-
-
 void I2Cinit(void)
     {
-    GPIO_InitTypeDef          GPIO_InitStructure;
-    I2C_InitTypeDef   I2C_InitStructure;
+    GPIO_InitTypeDef GPIO_InitStructure;
+    I2C_InitTypeDef I2C_InitStructure;
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1,  ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
 
     //GPIOB->BSRRL = BIT_6 | BIT_7;                            // SDA, SCL -> hi
-    GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_6 | GPIO_Pin_7; // SDA, SCL def
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;            // alternate function
-    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7; // SDA, SCL def
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;           // alternate function
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;           // use open drain !
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
@@ -242,14 +243,64 @@ void I2Cinit(void)
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_I2C1);  // PB6:I2C1_SCL
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_I2C1);  // PB7:I2C1_SDA
 
-    I2C_InitStructure.I2C_ClockSpeed      = 400000;
-    I2C_InitStructure.I2C_Mode            = I2C_Mode_I2C;
-    I2C_InitStructure.I2C_DutyCycle       = I2C_DutyCycle_16_9;
-    I2C_InitStructure.I2C_OwnAddress1      = 0;
-    I2C_InitStructure.I2C_Ack             = I2C_Ack_Disable;
+    I2C_InitStructure.I2C_ClockSpeed = 400000;
+    I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
+    I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_16_9;
+    I2C_InitStructure.I2C_OwnAddress1 = 0;
+    I2C_InitStructure.I2C_Ack = I2C_Ack_Disable;
     I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
     I2C_Init(I2C1, &I2C_InitStructure);
     I2C_Cmd(I2C1, ENABLE);
+    }
+
+/**
+ * Funkcija cita stanje SDA linije kao obicnog porta.
+ */
+char SDA_State(void)
+    {
+    if ((GPIOB->IDR & 0x0080))
+	return 1;
+    else
+	return 0;
+    }/***** SDA_State() *****/
+
+/**
+ * Resetira I2C chipove ako je koji zbog prekida rada ostao zaglavljen i nije spreman primit START impuls.
+ */
+
+void i2c_reset(void)
+    {
+    char i;
+
+    GPIO_InitTypeDef GPIO_InitStructure;
+    I2C_InitTypeDef I2C_InitStructure;
+    I2C_DeInit(I2C1);
+
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+    SDA_1();  //Tristate data bus giving it a 1 level
+    for (i = 0; i < 9; i++)
+	{
+	SCL_1();	//SCL = 1;  //Tristate clock line making it a 1
+	delay_ms(5);
+	SCL_0();	//SCL = 0;  //Force clock line low
+	delay_ms(5);
+	if (SDA_State())
+	    break;     //Check SDA line if EEPROM has released it it goes high
+	}
+    //i2c_stop();     //Send stop condition
+    /* I2C Stop condition, clock goes high when data is low */
+    SCL_0();	//I2C_CLK = LOW;
+    SDA_0();	//I2C_DATA = LOW;
+    SCL_1();	//I2C_CLK = HIGH;
+    SDA_1();	//I2C_DATA = HIGH;
+
     }
 
 /************************************************************************
@@ -261,36 +312,108 @@ unsigned char OWreset(unsigned char channel)
     {
     unsigned char status, chipAdr;
     chipAdr = DS2482_channel_select(channel);
+    I2CTimer = 1;
     while (I2C_GetFlagStatus(I2C_PORT, I2C_FLAG_BUSY))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Transmitter);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     //komanda
     I2C_SendData(I2C_PORT, CMD_1WRS);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Receiver);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_AcknowledgeConfig(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     status = I2C_ReceiveData(I2C_PORT);
 
     delay_count = 0;
     do
 	{
+	I2CTimer = 1;
 	while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	    ;
+	    {
+	    if (I2CTimer > IC_TIMEOUT_MS)
+		{
+		I2C_GenerateSTOP(I2C_PORT, ENABLE);
+		I2CTimer = 0;
+		return I2C_TIMEOUT_ERR;
+		}
+
+	    };
 	status = I2C_ReceiveData(I2C_PORT);
 	delay_us(100);
 	if (++delay_count > DELAY_COUNT_NUM)
@@ -301,9 +424,17 @@ unsigned char OWreset(unsigned char channel)
 	    }
 	}
     while (status & STATUS_1WB);
-
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_AcknowledgeConfig(I2C_PORT, DISABLE);
     status = I2C_ReceiveData(I2C_PORT);
     I2C_AcknowledgeConfig(I2C_PORT, DISABLE);
@@ -323,39 +454,119 @@ unsigned char OWWriteByte(unsigned char channel, unsigned char dta)
     {
     unsigned char status, chipAdr;
     chipAdr = DS2482_channel_select(channel);
+    I2CTimer = 1;
     while (I2C_GetFlagStatus(I2C_PORT, I2C_FLAG_BUSY))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Transmitter);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     //komanda
     I2C_SendData(I2C_PORT, CMD_1WWB);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_SendData(I2C_PORT, dta);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Receiver);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_AcknowledgeConfig(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     status = I2C_ReceiveData(I2C_PORT);
 
     delay_count = 0;
     do
 	{
+	I2CTimer = 1;
 	while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	    ;
+	    {
+	    if (I2CTimer > IC_TIMEOUT_MS)
+		{
+		I2C_GenerateSTOP(I2C_PORT, ENABLE);
+		I2CTimer = 0;
+		return I2C_TIMEOUT_ERR;
+		}
+
+	    };
 	status = I2C_ReceiveData(I2C_PORT);
 	delay_us(10);
 	if (++delay_count > DELAY_COUNT_NUM)
@@ -366,9 +577,17 @@ unsigned char OWWriteByte(unsigned char channel, unsigned char dta)
 	    }
 	}
     while (status & STATUS_1WB);
-
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_AcknowledgeConfig(I2C_PORT, DISABLE);
     status = I2C_ReceiveData(I2C_PORT);
 
@@ -387,36 +606,107 @@ unsigned char OWReadByte(unsigned char channel, unsigned char *dta)
     {
     unsigned char status, chipAdr;
     chipAdr = DS2482_channel_select(channel);
+    I2CTimer = 1;
     while (I2C_GetFlagStatus(I2C_PORT, I2C_FLAG_BUSY))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Transmitter);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     //komanda
     I2C_SendData(I2C_PORT, CMD_1WRB);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Receiver);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_AcknowledgeConfig(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     status = I2C_ReceiveData(I2C_PORT);
 
     delay_count = 0;
     do
 	{
+	I2CTimer = 1;
 	while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	    ;
+	    {
+	    if (I2CTimer > IC_TIMEOUT_MS)
+		{
+		I2C_GenerateSTOP(I2C_PORT, ENABLE);
+		I2CTimer = 0;
+		return I2C_TIMEOUT_ERR;
+		}
+
+	    };
 	status = I2C_ReceiveData(I2C_PORT);
 	delay_us(10);
 	if (++delay_count > DELAY_COUNT_NUM)
@@ -428,38 +718,119 @@ unsigned char OWReadByte(unsigned char channel, unsigned char *dta)
 	}
     while (status & STATUS_1WB);
 
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_AcknowledgeConfig(I2C_PORT, DISABLE);
     status = I2C_ReceiveData(I2C_PORT);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_AcknowledgeConfig(I2C_PORT, ENABLE);
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Transmitter);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     //komanda
     I2C_SendData(I2C_PORT, CMD_SRP);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_SendData(I2C_PORT, 0xE1);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Receiver);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_AcknowledgeConfig(I2C_PORT, DISABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     *dta = I2C_ReceiveData(I2C_PORT);
 
     //stop
@@ -476,30 +847,96 @@ unsigned char DS2482_reset(unsigned char channel)
     {
     uint8_t chipAdr, status;
     chipAdr = DS2482_channel_select(channel);
+    I2CTimer = 1;
     while (I2C_GetFlagStatus(I2C_PORT, I2C_FLAG_BUSY))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
+
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
+
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Transmitter);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
+
     //komanda
     I2C_SendData(I2C_PORT, CMD_DRST);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     //ponovni start
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
+
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Receiver);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_AcknowledgeConfig(I2C_PORT, DISABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     status = I2C_ReceiveData(I2C_PORT);
     //stop
     I2C_GenerateSTOP(I2C_PORT, ENABLE);
@@ -515,33 +952,104 @@ unsigned char DS2482_init(unsigned char channel)
     {
     uint8_t chipAdr, status;
     chipAdr = DS2482_channel_select(channel);
+    I2CTimer = 1;
     while (I2C_GetFlagStatus(I2C_PORT, I2C_FLAG_BUSY))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Transmitter);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     //komanda
     I2C_SendData(I2C_PORT, CMD_WCFG);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_SendData(I2C_PORT, 0xA5);    //SPU+APU
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     //ponovni start
     I2C_GenerateSTART(I2C_PORT, ENABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     I2C_Send7bitAddress(I2C_PORT, chipAdr, I2C_Direction_Receiver);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
 
     I2C_AcknowledgeConfig(I2C_PORT, DISABLE);
+    I2CTimer = 1;
     while (!I2C_CheckEvent(I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED))
-	;
+	{
+	if (I2CTimer > IC_TIMEOUT_MS)
+	    {
+	    I2C_GenerateSTOP(I2C_PORT, ENABLE);
+	    I2CTimer = 0;
+	    return I2C_TIMEOUT_ERR;
+	    }
+
+	};
     status = I2C_ReceiveData(I2C_PORT);
     //stop
     I2C_GenerateSTOP(I2C_PORT, ENABLE);
@@ -622,48 +1130,48 @@ void setDate(unsigned char year, unsigned char month, unsigned char date,
     RTC_Date.RTC_Date = date;
     RTC_Date.RTC_WeekDay = day;
     RTC_SetDate(RTC_Format_BIN, &RTC_Date);
-}/* setDate() */
+    }/* setDate() */
 
 void setTime(unsigned char hour, unsigned char min, unsigned char sec)
-{
-RTC_TimeTypeDef RTC_Time;
+    {
+    RTC_TimeTypeDef RTC_Time;
 
-RTC_Time.RTC_H12 = RTC_HourFormat_24;
-RTC_Time.RTC_Hours = hour;
-RTC_Time.RTC_Minutes = min;
-RTC_Time.RTC_Seconds = sec;
-RTC_SetTime(RTC_Format_BIN, &RTC_Time);
+    RTC_Time.RTC_H12 = RTC_HourFormat_24;
+    RTC_Time.RTC_Hours = hour;
+    RTC_Time.RTC_Minutes = min;
+    RTC_Time.RTC_Seconds = sec;
+    RTC_SetTime(RTC_Format_BIN, &RTC_Time);
 
-}/***** setTime() *****/
+    }/***** setTime() *****/
 
 /********************************************************************************
  Function:       ptIN1
  Purpose:        OÄ�itava stanje ulazna.
  *********************************************************************************/
 PT_THREAD(ptIN1xxx(struct pt *pt))
-{
-PT_BEGIN(pt)
-;
-PT_YIELD(pt);
-PT_WAIT_UNTIL(pt, IN1_STATE!=0);
-timer_set(&IN1Timer, 50);
-PT_WAIT_UNTIL(pt, timer_expired(&IN1Timer));
-if (IN1_STATE > 0)
     {
-    input1 = DOOR_CLOSE;
+    PT_BEGIN(pt)
+    ;
+    PT_YIELD(pt);
+    PT_WAIT_UNTIL(pt, IN1_STATE!=0);
+    timer_set(&IN1Timer, 50);
+    PT_WAIT_UNTIL(pt, timer_expired(&IN1Timer));
+    if (IN1_STATE > 0)
+	{
+	input1 = DOOR_CLOSE;
 //    gisAlarm(1, DOORCLOSE, 1);
-    }
+	}
 
-else
-    PT_RESTART(pt);
-PT_WAIT_UNTIL(pt, (IN1_STATE==0));
-timer_set(&IN1Timer, 50);
-PT_WAIT_UNTIL(pt, timer_expired(&IN1Timer));
-if (IN1_STATE == 0)
-    {
-    input1 = DOOR_OPEN;
+    else
+	PT_RESTART(pt);
+    PT_WAIT_UNTIL(pt, (IN1_STATE==0));
+    timer_set(&IN1Timer, 50);
+    PT_WAIT_UNTIL(pt, timer_expired(&IN1Timer));
+    if (IN1_STATE == 0)
+	{
+	input1 = DOOR_OPEN;
 //    gisAlarm(1, DOOROPEN, 0);
-    }
+	}
 
 PT_END(pt);
 }/***** ptIN1() *****/
@@ -681,21 +1189,21 @@ PT_WAIT_UNTIL(pt, IN2_STATE!=0);
 timer_set(&IN2Timer, 50);
 PT_WAIT_UNTIL(pt, timer_expired(&IN2Timer));
 if (IN2_STATE > 0)
-{
-input2 = DOOR_CLOSE;
+    {
+    input2 = DOOR_CLOSE;
 //gisAlarm(2, DOORCLOSE, 1);
-}
+    }
 
 else
-PT_RESTART(pt);
+    PT_RESTART(pt);
 PT_WAIT_UNTIL(pt, (IN2_STATE==0));
 timer_set(&IN2Timer, 50);
 PT_WAIT_UNTIL(pt, timer_expired(&IN2Timer));
 if (IN2_STATE == 0)
-{
-input2 = DOOR_OPEN;
+    {
+    input2 = DOOR_OPEN;
 //gisAlarm(2, DOOROPEN, 0);
-}
+    }
 
 PT_END(pt);
 }/***** ptIN2() *****/

@@ -22,27 +22,14 @@ function SendData()
 //*************************************************
 {
 var xmlDocument;
-if ($("input:radio[name='rbDDNS']:checked").val() == 1)
-	var DDNSvalue="ON";
-else
-	 DDNSvalue="OFF";  
-if ($("input:radio[name='rbDHCP']:checked").val() == 1)
-	var DHCPvalue="ON";
-else
-	 DHCPvalue="OFF";  	      
 xmlDocument="<?xml version='1.0' encoding='iso-8859-1'?>";
 xmlDocument+="<IPMODULA>";
 xmlDocument+="<NAZIV>"+$("#naziv").val()+"</NAZIV>";
-xmlDocument+="<DHCP>"+DHCPvalue+"</DHCP>";
-xmlDocument+="<DDNNS>"+DDNSvalue+"</DDNS>";
 xmlDocument+="<IP>"+$("#ip").val()+"</IP>";
 xmlDocument+="<MAC>"+$("#macad").val()+"</MAC>";
 xmlDocument+="<SUB>"+$("#subnet").val()+"</SUB>";
 xmlDocument+="<ROUT>"+$("#usm").val()+"</ROUT>";
 xmlDocument+="<DNS>"+$("#dns").val()+"</DNS>";
-xmlDocument+="<USER>"+$("#ime").val()+"</USER>";
-xmlDocument+="<PASS>"+$("#loz").val()+"</PASS>";
-xmlDocument+="<HOST>"+$("#host").val()+"</HOST>";
 xmlDocument+="<HTTP>"+$("#http").val()+"</HTTP>";
 xmlDocument+="<ALARMIP>"+$("#asip").val()+"</ALARMIP>";
 xmlDocument+="<ALARMPORT>"+$("#asport").val()+"</ALARMPORT>";
@@ -96,15 +83,10 @@ $(document).ready(function(){
 				$("#usm").val($(this).find('ROUT').text()); 
 				$("#macad").val($(this).find('MAC').text()); 
 				$("#http").val($(this).find('HTTP').text()); 
-				$("#ime").val($(this).find('USER').text()); 
-				$("#loz").val($(this).find('PASS').text()); 
-				$("#host").val($(this).find('HOST').text()); 
 				$("#naziv").val($(this).find('NAZIV').text());
 				$("#dns").val($(this).find('DNS').text());
 				$("#asip").val($(this).find('ALARMIP').text());
 				$("#asport").val($(this).find('ALARMPORT').text());
-				var vDDNS=$(this).find('DDNS').text();
-				var vDHCP=$(this).find('DHCP').text();
 				});
 			}
 		});
@@ -125,7 +107,16 @@ $(document).ready(function(){
              $("#Spremi").jqxButton({ width: '150',height: '25px'});
              $('#Spremi').on('click', function () {SendData();});
              $("#Reset").jqxButton({ width: '150',height: '25px',template: 'danger'});
-             $('#Reset').on('click', function () {ResetModula();});             
+             $('#Reset').on('click', function () {ResetModula();});  
+             $("#naziv").jqxInput({ width: '300px', height: '25px' });
+             $("#ip").jqxInput({ width: '200px', height: '25px' });   
+             $("#subnet").jqxInput({ width: '200px', height: '25px' }); 
+             $("#usm").jqxInput({ width: '200px', height: '25px' });   
+             $("#macad").jqxInput({ width: '200px', height: '25px' });
+             $("#dns").jqxInput({ width: '200px', height: '25px' });
+             $("#http").jqxInput({ width: '200px', height: '25px' });         
+             $("#asip").jqxInput({ width: '200px', height: '25px' });    
+             $("#asport").jqxInput({ width: '200px', height: '25px' });                                
         });
     </script>
     
@@ -139,83 +130,50 @@ $(document).ready(function(){
 </div>	
 <table width="395" border="0" align="center">
   <tr>
-    <td><div align="center">
-    <font color="#004a73" ><strong>Postavke</strong></font>
-    </div></td>
+    <td><div align="center" class="div_font_hd1">Postavke</div></td>
   </tr>
 </table>
 <table width="550" border="0" align="center">
   <tr>
-    <td><strong><font color="#">Objekt :</font></strong></td>
+    <td width="164" class="div_font_hd2">Objekt:</td>
     <td><input name="naziv" type="text" id="naziv" size="46" maxlength="32" /></td>
   </tr>
   <tr>
-    <td width="164"><strong><font color="#">IP adresa :</font></strong></td>
+    <td class="div_font_hd2">IP adresa:</td>
     <td width="276"><label>
       <input type="text" name="ip" id="ip" />
     </label></td>
   </tr>
   <tr>
-    <td><strong>SUBNET :</strong></td>
+    <td class="div_font_hd2">SUBNET:</td>
     <td><input type="text" name="subnet" id="subnet" /></td>
   </tr>
   <tr>
-    <td><strong>Usmjerivač :</strong></td>
+    <td class="div_font_hd2">Router:</td>
     <td><input type="text" name="usm" id="usm" /></td>
   </tr>
   <tr>
-    <td><strong>Mac adresa:</strong></td>
+    <td class="div_font_hd2">MAC adresa:</td>
     <td><input name="macad" type="text" id="macad" readonly="true" /></td>
   </tr>
   <tr>
-    <td><strong>DNS :</strong></td>
+    <td class="div_font_hd2">DNS:</td>
     <td><input type="text" name="dns" id="dns" /></td>
   </tr>
   <tr>
-    <td><strong>HTTP Port :</strong></td>
+    <td class="div_font_hd2">HTTP port:</td>
     <td><input type="text" name="http" id="http" /></td>
   </tr>
   <tr>
-    <td><strong>Alarm server IP :</strong></td>
+    <td class="div_font_hd2">IP alarmnog servera:</td>
     <td><input type="text" name="asip" id="asip" /></td>
   </tr>    
   <tr>
-    <td><strong>Alarm server Port :</strong></td>
+    <td class="div_font_hd2">PORT alarmnog servera:</td>
     <td><input type="text" name="asport" id="asport" /></td>
   </tr>
    </table>
-<table width="210" border="0" align="center">
-  <tr>
-    <td width="61" height="23"><font color="#004a73">DHCP</font></td>
-    <td width="52"><input name="rbDHCP" type="radio" value="1">
-      ON</td>
-    <td width="61"><input name="rbDHCP" type="radio" value="2" checked="checked" />      
-      OFF
-  </tr>
-</table>
-<table width="188" border="0" align="center">
-  <tr>
-    <td width="61" height="23"><font color="#004a73">DDNS      </font></td>
-    <td width="52"><input name="rbDDNS" type="radio" value="1">
-      ON</td>
-    <td width="61"><input name="rbDDNS" type="radio" value="2" checked="checked" />      
-      OFF
-  </tr>
-</table>
-<table width="363" border="0" align="center">
-  <tr>
-    <td width="173"><strong>Korisničko ime :</strong></td>
-    <td width="180"><input name="ime" type="text" id="ime" size="16" maxlength="8" /></td>
-  </tr>
-  <tr>
-    <td><strong>Lozinka :</strong></td>
-    <td><input name="loz" type="text" id="loz" size="16" maxlength="8" /></td>
-  </tr>
-  <tr>
-    <td><strong>Host :</strong></td>
-    <td><input name="host" type="text" id="host" size="40" maxlength="32" /></td>
-  </tr>
-</table>
+
 <div style="height:40px" ></div>    
 <table width="395" border="0" align="center">
     <tr>

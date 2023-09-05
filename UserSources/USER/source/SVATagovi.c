@@ -69,7 +69,7 @@ unsigned char StringToFile(UINT8 *retBuf, unsigned char inLen)
 	else if (isspace(*iBuf))
 	    tb[cnt++] = *iBuf++;
 	else if ((*iBuf) == '-' || (*iBuf) == '_' || (*iBuf) == '.'
-		|| (*iBuf) == '@')
+		|| (*iBuf) == '@' || (*iBuf) == '?' || (*iBuf) == '#')
 	    tb[cnt++] = *iBuf++;
 	else if ((*iBuf++) == '%')
 	    {
@@ -380,14 +380,14 @@ UINT8 SaveNet(UINT8 *bpoint, UINT16 len)
     inDataBuf = bpoint;
     rBuf[0] = 0xAA;
     rBuf[1] = 0x55;
-    varlen = XMLParser("<DHCP>", (char*) inDataBuf, len, tb);
-    if (varlen)
-	{
-	if (!strcmp(tb, "ON"))
-	    EEwrite_8(EE_DHCP_STATE, 1);
-	else
-	    EEwrite_8(EE_DHCP_STATE, 0);
-	}
+    /*   varlen = XMLParser("<DHCP>", (char*) inDataBuf, len, tb);
+     if (varlen)
+     {
+     if (!strcmp(tb, "ON"))
+     EEwrite_8(EE_DHCP_STATE, 1);
+     else
+     EEwrite_8(EE_DHCP_STATE, 0);
+     }*/
     varlen = XMLParser("<IP>", (char*) inDataBuf, len, tb);
     iBuf = tb;
     if (varlen)
@@ -423,27 +423,27 @@ UINT8 SaveNet(UINT8 *bpoint, UINT16 len)
 	if (IntToFile(pb, varlen))	//-------HTTP port
 	    EEwrite(EE_HTTP_PORT, pb, 2);
 	}
-    varlen = XMLParser("<USER>", (char*) inDataBuf, len, tb);
-    iBuf = tb;
-    if (varlen)
-	{
-	if (StringToFile(pb, varlen))	//-------USER NAME
-	    EEwrite(EE_USERNAME, pb, 16);
-	}
-    varlen = XMLParser("<PASS>", (char*) inDataBuf, len, tb);
-    iBuf = tb;
-    if (varlen)
-	{
-	if (StringToFile(pb, varlen))	//-------PASSWORD
-	    EEwrite(EE_PASS, pb, 16);
-	}
-    varlen = XMLParser("<HOST>", (char*) inDataBuf, len, tb);
-    iBuf = tb;
-    if (varlen)
-	{
-	if (StringToFile(pb, varlen))	//-------DDNS HOST
-	    EEwrite(EE_DDNS_HOST, pb, 32);
-	}
+    /*    varlen = XMLParser("<USER>", (char*) inDataBuf, len, tb);
+     iBuf = tb;
+     if (varlen)
+     {
+     if (StringToFile(pb, varlen))	//-------USER NAME
+     EEwrite(EE_USERNAME, pb, 16);
+     }
+     varlen = XMLParser("<PASS>", (char*) inDataBuf, len, tb);
+     iBuf = tb;
+     if (varlen)
+     {
+     if (StringToFile(pb, varlen))	//-------PASSWORD
+     EEwrite(EE_PASS, pb, 16);
+     }
+     varlen = XMLParser("<HOST>", (char*) inDataBuf, len, tb);
+     iBuf = tb;
+     if (varlen)
+     {
+     if (StringToFile(pb, varlen))	//-------DDNS HOST
+     EEwrite(EE_DDNS_HOST, pb, 32);
+     }*/
     varlen = XMLParser("<NAZIV>", (char*) inDataBuf, len, tb);
     iBuf = tb;
     if (varlen)
@@ -854,6 +854,16 @@ UINT8 Sensor(UINT8 snum, UINT8 *bpoint, UINT16 len)
 	//--------HISTEREZA
 	senzor[snum].HIS = getTemp(varlen);
 	EEwrite_8(ee_block + EE_HIST, senzor[snum].HIS);
+	}
+    varlen = XMLParser("<DELAY>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)	//--------ALARM DELAY
+	{
+	if (IntToFile(pb, varlen))
+	    {
+	    senzor[snum].DELAY = pb[0] * 256 + pb[1];
+	    EEwrite_16(ee_block + EE_DELAY, senzor[snum].DELAY);
+	    }
 	}
     varlen = XMLParser("<KALIB>", (char*) inDataBuf, len, tb);
     if (varlen)
@@ -1380,7 +1390,7 @@ UINT8 SaveInput(UINT8 *bpoint, UINT16 len)
     uint8_t tmp;
     inDataBuf = bpoint;
     uint8_t input_sms1, input_sms2, input_sms3, input_sms4, input_sms5;
-    uint8_t input_mail1, input_mail2, input_mail3, input_mail4, input_mail5;
+    uint8_t input_wapp1, input_wapp2, input_wapp3, input_wapp4, input_wapp5;
 
     varlen = XMLParser("<NAME1>", (char*) inDataBuf, len, tb);
     iBuf = tb;
@@ -1411,13 +1421,13 @@ UINT8 SaveInput(UINT8 *bpoint, UINT16 len)
 	if (!strcmp(tb, "ON"))
 	    {
 	    EEwrite_8(EE_INPUT_ALARM1, 1);
-	    //sntp.sntpon=1;
+	    dinput[0].enable = 1;
 	    }
 
 	else
 	    {
 	    EEwrite_8(EE_INPUT_ALARM1, 0);
-	    //sntp.sntpon=0;
+	    dinput[0].enable = 0;
 	    }
 	}
 
@@ -1427,13 +1437,13 @@ UINT8 SaveInput(UINT8 *bpoint, UINT16 len)
 	if (!strcmp(tb, "ON"))
 	    {
 	    EEwrite_8(EE_INPUT_ALARM2, 1);
-	    //sntp.sntpon=1;
+	    dinput[1].enable = 1;
 	    }
 
 	else
 	    {
 	    EEwrite_8(EE_INPUT_ALARM2, 0);
-	    //sntp.sntpon=0;
+	    dinput[1].enable = 0;
 	    }
 	}
 
@@ -1443,13 +1453,13 @@ UINT8 SaveInput(UINT8 *bpoint, UINT16 len)
 	if (!strcmp(tb, "ON"))
 	    {
 	    EEwrite_8(EE_INPUT_ALARM3, 1);
-	    //sntp.sntpon=1;
+	    dinput[2].enable = 1;
 	    }
 
 	else
 	    {
 	    EEwrite_8(EE_INPUT_ALARM3, 0);
-	    //sntp.sntpon=0;
+	    dinput[2].enable = 0;
 	    }
 	}
 
@@ -1459,13 +1469,13 @@ UINT8 SaveInput(UINT8 *bpoint, UINT16 len)
 	if (!strcmp(tb, "NC"))
 	    {
 	    EEwrite_8(EE_INPUT_TIP1, 1);
-	    //sntp.sntpon=1;
+	    dinput[0].type = 1;
 	    }
 
 	else
 	    {
-	    EEwrite_8(EE_INPUT_TIP1, 0);
-	    //sntp.sntpon=0;
+	    EEwrite_8(EE_INPUT_TIP1, 2);
+	    dinput[0].type = 2;
 	    }
 	}
     varlen = XMLParser("<TIP2>", (char*) inDataBuf, len, tb);
@@ -1474,13 +1484,13 @@ UINT8 SaveInput(UINT8 *bpoint, UINT16 len)
 	if (!strcmp(tb, "NC"))
 	    {
 	    EEwrite_8(EE_INPUT_TIP2, 1);
-	    //sntp.sntpon=1;
+	    dinput[1].type = 1;
 	    }
 
 	else
 	    {
-	    EEwrite_8(EE_INPUT_TIP2, 0);
-	    //sntp.sntpon=0;
+	    EEwrite_8(EE_INPUT_TIP2, 2);
+	    dinput[1].type = 2;
 	    }
 	}
     varlen = XMLParser("<TIP3>", (char*) inDataBuf, len, tb);
@@ -1489,60 +1499,60 @@ UINT8 SaveInput(UINT8 *bpoint, UINT16 len)
 	if (!strcmp(tb, "NC"))
 	    {
 	    EEwrite_8(EE_INPUT_TIP3, 1);
-	    //sntp.sntpon=1;
+	    dinput[2].type = 1;
 	    }
 
 	else
 	    {
-	    EEwrite_8(EE_INPUT_TIP3, 0);
-	    //sntp.sntpon=0;
+	    EEwrite_8(EE_INPUT_TIP3, 2);
+	    dinput[2].type = 2;
 	    }
 	}
 
-    varlen = XMLParser("<MAIL1>", (char*) inDataBuf, len, tb);
+    varlen = XMLParser("<WAPP1>", (char*) inDataBuf, len, tb);
     if (varlen)
 	{
 	if (!strcmp(tb, "ON"))
-	    input_mail1 = 1;
+	    input_wapp1 = 1;
 	else
-	    input_mail1 = 0;
+	    input_wapp1 = 0;
 	}
 
     inDataBuf = bpoint;
-    varlen = XMLParser("<MAIL2>", (char*) inDataBuf, len, tb);
+    varlen = XMLParser("<WAPP2>", (char*) inDataBuf, len, tb);
     if (varlen)
 	{
 	if (!strcmp(tb, "ON"))
-	    input_mail2 = 1;
+	    input_wapp2 = 1;
 	else
-	    input_mail2 = 0;
+	    input_wapp2 = 0;
 	}
     inDataBuf = bpoint;
-    varlen = XMLParser("<MAIL3>", (char*) inDataBuf, len, tb);
+    varlen = XMLParser("<WAPP3>", (char*) inDataBuf, len, tb);
     if (varlen)
 	{
 	if (!strcmp(tb, "ON"))
-	    input_mail3 = 1;
+	    input_wapp3 = 1;
 	else
-	    input_mail3 = 0;
+	    input_wapp3 = 0;
 	}
     inDataBuf = bpoint;
-    varlen = XMLParser("<MAIL4>", (char*) inDataBuf, len, tb);
+    varlen = XMLParser("<WAPP4>", (char*) inDataBuf, len, tb);
     if (varlen)
 	{
 	if (!strcmp(tb, "ON"))
-	    input_mail4 = 1;
+	    input_wapp4 = 1;
 	else
-	    input_mail4 = 0;
+	    input_wapp4 = 0;
 	}
     inDataBuf = bpoint;
-    varlen = XMLParser("<MAIL5>", (char*) inDataBuf, len, tb);
+    varlen = XMLParser("<WAPP5>", (char*) inDataBuf, len, tb);
     if (varlen)
 	{
 	if (!strcmp(tb, "ON"))
-	    input_mail5 = 1;
+	    input_wapp5 = 1;
 	else
-	    input_mail5 = 0;
+	    input_wapp5 = 0;
 	}
     inDataBuf = bpoint;
     varlen = XMLParser("<SMS1>", (char*) inDataBuf, len, tb);
@@ -1585,13 +1595,13 @@ UINT8 SaveInput(UINT8 *bpoint, UINT16 len)
 	else
 	    input_sms5 = 0;
 	}
-    rBuf[0] = input_mail1;
-    rBuf[1] = input_mail2;
-    rBuf[2] = input_mail3;
-    rBuf[3] = input_mail4;
-    rBuf[4] = input_mail5;
+    rBuf[0] = input_wapp1;
+    rBuf[1] = input_wapp2;
+    rBuf[2] = input_wapp3;
+    rBuf[3] = input_wapp4;
+    rBuf[4] = input_wapp5;
 
-    EEwrite(EE_INPUT_MAIL1, rBuf, 5);
+    EEwrite(EE_INPUT_WAPP1, rBuf, 5);
 
     rBuf[0] = input_sms1;
     rBuf[1] = input_sms2;
@@ -1600,8 +1610,115 @@ UINT8 SaveInput(UINT8 *bpoint, UINT16 len)
     rBuf[4] = input_sms5;
     EEwrite(EE_INPUT_SMS1, rBuf, 5);
 
+    varlen = XMLParser("<DELAY1>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)	//--------ALARM DELAY
+	{
+	if (IntToFile(pb, varlen))
+	    {
+	    EEwrite_16(EE_INPUT_DELAY1, (pb[0] * 256 + pb[1]));
+	    dinput[0].DELAY = pb[0] * 256 + pb[1];
+	    }
+	}
+    varlen = XMLParser("<DELAY2>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)	//--------ALARM DELAY
+	{
+	if (IntToFile(pb, varlen))
+	    {
+	    EEwrite_16(EE_INPUT_DELAY2, (pb[0] * 256 + pb[1]));
+	    dinput[1].DELAY = pb[0] * 256 + pb[1];
+	    }
+	}
+    varlen = XMLParser("<DELAY3>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)	//--------ALARM DELAY
+	{
+	if (IntToFile(pb, varlen))
+	    {
+	    EEwrite_16(EE_INPUT_DELAY3, (pb[0] * 256 + pb[1]));
+	    dinput[1].DELAY = pb[0] * 256 + pb[1];
+	    }
+	}
     return 1;
     }/***** SaveInput() *****/
+
+/****************************************************************
+ *****************************************************************/
+UINT8 SaveMQTT(UINT8 *bpoint, UINT16 len)
+    {
+    UINT8 varlen, cnt, tmp8;
+
+    inDataBuf = bpoint;
+
+    varlen = XMLParser("<ENABLE>", (char*) inDataBuf, len, tb);
+    if (varlen)
+	{
+	if (!strcmp(tb, "ON"))
+	    tmp8 = 1;
+	else
+	    tmp8 = 0;
+	EEwrite_8(EE_MQTT_ENABLE, tmp8);
+	}
+
+    varlen = XMLParser("<SERVER>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)
+	StringToFile(rBuf, varlen);
+    EEwrite(EE_MQTT_SERVER, rBuf, strlen(rBuf) + 1);
+
+    varlen = XMLParser("<PORT>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)
+	{
+	if (IntToFile(pb, varlen))
+	    EEwrite(EE_MQTT_PORT, pb, 2);
+	}
+
+    varlen = XMLParser("<USERNAME>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)
+	StringToFile(rBuf, varlen);
+    EEwrite(EE_MQTT_UNAME, rBuf, strlen(rBuf) + 1);
+
+    varlen = XMLParser("<PASS>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)
+	StringToFile(rBuf, varlen);
+    EEwrite(EE_MQTT_PASS, rBuf, strlen(rBuf) + 1);
+
+    varlen = XMLParser("<TOPIC>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)
+	StringToFile(rBuf, varlen);
+    EEwrite(EE_MQTT_TOPIC, rBuf, strlen(rBuf) + 1);
+
+    varlen = XMLParser("<KEEPALIVE>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)
+	{
+	tmp8 = getTemp(varlen);
+	EEwrite_8(EE_MQTT_KEEPALIVE, tmp8);
+	}
+
+    varlen = XMLParser("<QOS>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)
+	{
+	tmp8 = getTemp(varlen);
+	EEwrite_8(EE_MQTT_QOS, tmp8);
+	}
+
+    varlen = XMLParser("<PERIOD>", (char*) inDataBuf, len, tb);
+    iBuf = tb;
+    if (varlen)
+	{
+	tmp8 = getTemp(varlen);
+	EEwrite_8(EE_MQTT_PERIOD, tmp8);
+	}
+
+    return 1;
+    }/***** SaveMQTT() ****/
 
 /****************************************************************
  *****************************************************************/

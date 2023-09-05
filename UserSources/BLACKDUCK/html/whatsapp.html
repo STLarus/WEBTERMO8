@@ -32,7 +32,7 @@
     {
       $('#form1').fadeTo(2000, 0.1);
       $('#spinner').show();
-      //idcredit = setInterval("loadCreditxml()", 4000);
+      idcredit = setInterval("loadCreditxml()", 4000);
       startCreditxml();
     }
 
@@ -133,7 +133,8 @@
       $(document).ready(function () {
         $.ajax({
           type: "GET",
-          url: "wapp.xml?sid=" + Math.random(),
+          //url: "wapp.xml?sid=" + Math.random(),
+          url: "wapp.xml",
           dataType: "xml",
           cache: false,
           success: function (xml) {
@@ -224,7 +225,7 @@
       xmlDocument += "<TESTWAPP>";
       xmlDocument += "<TWAPP>" + testsms + "</TWAPP>";
       xmlDocument += "</TESTWAPP>";
-      //idstatus = setInterval("loadStatus()", 2000);
+      idstatus = setInterval("loadStatus()", 2000);
       $.ajax({
         url: "wapptest.sva" + getstring(),
         type: "POST",
@@ -259,7 +260,21 @@
         $("#test4").on('click', function () { SendTest(4); });
         $("#test5").jqxButton({ width: '100', height: '25px' });
         $("#test5").on('click', function () { SendTest(5); });
-
+        $("#txtWAPP1").jqxInput({ width: '150px', height: '25px' });
+        $("#txtWAPP2").jqxInput({ width: '150px', height: '25px' });
+        $("#txtWAPP3").jqxInput({ width: '150px', height: '25px' });
+        $("#txtWAPP4").jqxInput({ width: '150px', height: '25px' });
+        $("#txtWAPP5").jqxInput({ width: '150px', height: '25px' });
+        $("#txtNAME1").jqxInput({ width: '300px', height: '25px' });
+        $("#txtNAME2").jqxInput({ width: '300px', height: '25px' });
+        $("#txtNAME3").jqxInput({ width: '300px', height: '25px' });
+        $("#txtNAME4").jqxInput({ width: '300px', height: '25px' });
+        $("#txtNAME5").jqxInput({ width: '300px', height: '25px' });
+        $("#txtAPI1").jqxInput({ width: '250px', height: '25px' });
+        $("#txtAPI2").jqxInput({ width: '250px', height: '25px' });
+        $("#txtAPI3").jqxInput({ width: '250px', height: '25px' });
+        $("#txtAPI4").jqxInput({ width: '250px', height: '25px' });
+        $("#txtAPI5").jqxInput({ width: '250px', height: '25px' });
 
       }
       );
@@ -280,92 +295,62 @@
   <div style="height:30px"></div>
   <table border="0" align="center" cellspacing="15">
     <tr>
-      <td>
-        <font color="#333333"><strong>WAPP 1:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtWAPP1" size="20" maxlength="16" /></td>
-      <td align="right">
-        <font color="#333333"><strong>NAME 1:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtNAME1" size="40" maxlength="30" /></td>
-      <td align="right">
-        <font color="#333333"><strong>APIKEY 1:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtAPI1" size="10" maxlength="30" /></td>
+      <td class="div_font_hd2">WAPP 1:</td>
+      <td colspan="2"><input type="text"  id="txtWAPP1"  maxlength="16" /></td>
+      <td class="div_font_hd2">NAME 1:</td>
+      <td colspan="2"><input type="text" id="txtNAME1"  maxlength="30" /></td>
+      <td class="div_font_hd2">APIKEY 1:</td>
+      <td colspan="2"><input type="text" id="txtAPI1"  maxlength="30" /></td>
       <td>
         <div align="center"> <input type="button" id="test1" value="Test 1" /></div>
       </td>
     </tr>
 
     <tr>
-      <td>
-        <font color="#333333"><strong>WAPP 2:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtWAPP2" size="20" maxlength="16" /></td>
-      <td align="right">
-        <font color="#333333"><strong>NAME 2:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtNAME2" size="40" maxlength="30" /></td>
-      <td align="right">
-        <font color="#333333"><strong>APIKEY 2:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtAPI2" size="10" maxlength="30" /></td>
+      <td class="div_font_hd2">WAPP 2:</td>
+      <td colspan="2"><input type="text"  id="txtWAPP2"  maxlength="16" /></td>
+      <td class="div_font_hd2">NAME 2:</td>
+      <td colspan="2"><input type="text" id="txtNAME2"  maxlength="30" /></td>
+      <td class="div_font_hd2">APIKEY 2:</td>
+      <td colspan="2"><input type="text" id="txtAPI2"  maxlength="30" /></td>
       <td>
         <div align="center"> <input type="button" id="test2" value="Test 2" /></div>
       </td>
     </tr>
 
     <tr>
-      <td>
-        <font color="#333333"><strong>WAPP 3:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtWAPP3" size="20" maxlength="16" /></td>
-      <td align="right">
-        <font color="#333333"><strong>NAME 3:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtNAME3" size="40" maxlength="30" /></td>
-      <td align="right">
-        <font color="#333333"><strong>APIKEY 3:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtAPI3" size="10" maxlength="30" /></td>
+      <td class="div_font_hd2">WAPP 3:</td>
+      <td colspan="2"><input type="text"  id="txtWAPP3"  maxlength="16" /></td>
+      <td class="div_font_hd2">NAME 3:</td>
+      <td colspan="2"><input type="text" id="txtNAME3"  maxlength="30" /></td>
+      <td class="div_font_hd2">APIKEY 3:</td>
+      <td colspan="2"><input type="text" id="txtAPI3"  maxlength="30" /></td>
       <td>
         <div align="center"> <input type="button" id="test3" value="Test 3" /></div>
       </td>
     </tr>
 
     <tr>
-      <td>
-        <font color="#333333"><strong>WAPP 4:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtWAPP4" size="20" maxlength="16" /></td>
-      <td align="right">
-        <font color="#333333"><strong>NAME 4:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtNAME4" size="40" maxlength="30" /></td>
-      <td align="right">
-        <font color="#333333"><strong>APIKEY 4:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtAPI4" size="10" maxlength="30" /></td>
+      <td class="div_font_hd2">WAPP 4:</td>
+      <td colspan="2"><input type="text"  id="txtWAPP4"  maxlength="16" /></td>
+      <td class="div_font_hd2">NAME 4:</td>
+      <td colspan="2"><input type="text" id="txtNAME4"  maxlength="30" /></td>
+      <td class="div_font_hd2">APIKEY 4:</td>
+      <td colspan="2"><input type="text" id="txtAPI4"  maxlength="30" /></td>
       <td>
         <div align="center"> <input type="button" id="test4" value="Test 4" /></div>
       </td>
     </tr>
 
     <tr>
+      <td class="div_font_hd2">WAPP 5:</td>
+      <td colspan="2"><input type="text"  id="txtWAPP5"  maxlength="16" /></td>
+      <td class="div_font_hd2">NAME 5:</td>
+      <td colspan="2"><input type="text" id="txtNAME5"  maxlength="30" /></td>
+      <td class="div_font_hd2">APIKEY 5:</td>
+      <td colspan="2"><input type="text" id="txtAPI5"  maxlength="30" /></td>
       <td>
-        <font color="#333333"><strong>WAPP 5:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtWAPP5" size="20" maxlength="16" /></td>
-      <td align="right">
-        <font color="#333333"><strong>NAME 5:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtNAME5" size="40" maxlength="30" /></td>
-      <td align="right">
-        <font color="#333333"><strong>APIKEY 5:</strong></font>
-      </td>
-      <td colspan="2"><input type="text" id="txtAPI5" size="10" maxlength="30" /></td>
-      <td>
-        <div align="center"> <input type="button" id="test5" value="Test 1" /></div>
+        <div align="center"> <input type="button" id="test5" value="Test 5" /></div>
       </td>
     </tr>
 

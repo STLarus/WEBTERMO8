@@ -89,6 +89,17 @@ const char *sTHigh[] =
 	    "T7HIGH",
 	    "T8HIGH"
     };
+const char *sDelay[] =
+    {
+	    "DELAY1",
+	    "DELAY2",
+	    "DELAY3",
+	    "DELAY4",
+	    "DELAY5",
+	    "DELAY6",
+	    "DELAY7",
+	    "DELAY8"
+    };
 
 uint32_t totsect, freesect;
 
@@ -503,15 +514,16 @@ UINT16 XMLMreza(UINT8 *xmlBuf)
     CreateXMLHeader();
     OpenTag("IPMODULA");
     tmp = EEread_8(EE_DHCP_STATE);	//--------<DHCP>
-    if (tmp == 0)
-	AddTag("DHCP", "OFF");
-    else
-	AddTag("DHCP", "ON");
-    tmp = EEread_8(EE_DDNS_STATE);	//--------<DDNS>
-    if (tmp == 0)
-	AddTag("DDNS", "OFF");
-    else
-	AddTag("DDNS", "ON");
+    /*    if (tmp == 0)
+     AddTag("DHCP", "OFF");
+     else
+     AddTag("DHCP", "ON");
+     tmp = EEread_8(EE_DDNS_STATE);	//--------<DDNS>
+     if (tmp == 0)
+     AddTag("DDNS", "OFF");
+     else
+     AddTag("DDNS", "ON");
+     */
     Adresa = EEread_32(EE_IP);
     LONGtoIP(tmpBuf, Adresa);
     AddTag("IP", tmpBuf);	//--------<IP>
@@ -537,12 +549,14 @@ UINT16 XMLMreza(UINT8 *xmlBuf)
     Adresa = EEread_16(EE_HTTP_PORT);
     sprintf(tmpBuf, "%d", Adresa);
     AddTag("HTTP", tmpBuf);	//--------<HTTP>
-    EEread(EE_USERNAME, twi_buf, 16);
-    AddTag("USER", twi_buf);	//--------<USER>
-    EEread(EE_PASS, twi_buf, 16);
-    AddTag("PASS", twi_buf);	//--------<PASS>
-    EEread(EE_DDNS_HOST, twi_buf, 32);
-    AddTag("HOST", twi_buf);	//--------<HOST>
+    /*    EEread(EE_USERNAME, twi_buf, 16);
+     AddTag("USER", twi_buf);	//--------<USER>
+     EEread(EE_PASS, twi_buf, 16);
+     AddTag("PASS", twi_buf);	//--------<PASS>
+
+     EEread(EE_DDNS_HOST, twi_buf, 32);
+     AddTag("HOST", twi_buf);	//--------<HOST>
+     */
     EEread(EE_OBJECT_NAME, twi_buf, 32);
     AddTag("NAZIV", twi_buf);	//--------<NAZIV>
     Adresa = EEread_32(EE_ALARM_IP);
@@ -995,7 +1009,7 @@ UINT16 XMLSensor(UINT8 snum, UINT8 *xmlBuf)
     AddTempTag("LOWLIMIT", senzor[snum].LOWLIMIT);
     AddTempTag("HIGHLIMIT", senzor[snum].HIGHLIMIT);
     AddTempTag("HIST", senzor[snum].HIS);
-    my_ftoa(senzor[snum].kalibracija, lstr,1);
+    my_ftoa(senzor[snum].kalibracija, lstr, 1);
     AddTag("KALIB", (char*) lstr);
 
     if (senzor[snum].ENBLE == 1)
@@ -1019,6 +1033,8 @@ UINT16 XMLSensor(UINT8 snum, UINT8 *xmlBuf)
 	AddTag("MTYPE", "MKT");
     else
 	AddTag("MTYPE", "AVERAGE");
+    itmp = EEread_16(0x100 * (snum + 1) + EE_DELAY);
+    AddNumTag("DELAY", itmp);
 
     EEread(0x100 * (snum + 1) + EE_SMS1, rBuf, 5);
     sms1 = rBuf[0];
@@ -1213,6 +1229,8 @@ UINT16 XMLOnline(UINT8 *xmlBuf)
     {
     UINT8 cnt;
     char tbf[8];
+    uint32_t delaytimer, delaysec;
+    uint16_t delayhh, delaymm, delayss;
 
     CreateXMLHeader();
     OpenTag("ONLINE");
@@ -1227,6 +1245,7 @@ UINT16 XMLOnline(UINT8 *xmlBuf)
     sprintf((char*) tbf, "%d", godina + 2000);
     strcat(lstr, tbf);
     AddTag("DATE", lstr);
+    EEread(0x100 * (cnt + 1) + EE_SENSOR_NAME, lstr, 16);
 
     sprintf((char*) lstr, "%d", sat);
     strcat(lstr, ":");
@@ -1263,6 +1282,18 @@ UINT16 XMLOnline(UINT8 *xmlBuf)
 	    AddTag(sAlarm[cnt], "ALLOW");
 	else
 	    AddTag(sAlarm[cnt], "NONE");
+	delaytimer = NVRAM_Read32(NV_DELAY_SEN1+(cnt*4));
+	if (delaytimer)
+	    {
+	    delaysec = senzor[cnt].DELAY - delaytimer;
+	    delayhh = delaysec / 3600;
+	    delaymm = (delaysec - delayhh * 3600) / 60;
+	    delayss = delaysec - delayhh * 3600 - delaymm * 60;
+	    sprintf(tmpBuf, "%d:%d:%d", delayhh, delaymm, delayss);
+	    }
+	else
+	    sprintf(tmpBuf, "0:0:0");
+	AddTag(sDelay[cnt], tmpBuf);
 	}
 
     CloseTag("ONLINE");
@@ -1570,7 +1601,6 @@ UINT16 XMLInput(UINT8 snum, UINT8 *xmlBuf)
     else
 	AddTag("TIP3", "NO");
 
-
     EEread(EE_INPUT_SMS1, rBuf, 5);
     sms1 = rBuf[0];
     sms2 = rBuf[1];
@@ -1578,7 +1608,7 @@ UINT16 XMLInput(UINT8 snum, UINT8 *xmlBuf)
     sms4 = rBuf[3];
     sms5 = rBuf[4];
 
-    EEread(0x100 * (snum + 1) + EE_WAPP1_ON, rBuf, 5);
+    EEread(EE_INPUT_WAPP1, rBuf, 5);
     wapp1 = rBuf[0];
     wapp2 = rBuf[1];
     wapp3 = rBuf[2];
@@ -1625,6 +1655,12 @@ UINT16 XMLInput(UINT8 snum, UINT8 *xmlBuf)
 	AddTag("SMS5", "OFF");
     else
 	AddTag("SMS5", "ON");
+    itmp = EEread_16(EE_INPUT_DELAY1);
+    AddNumTag("DELAY1", itmp);
+    itmp = EEread_16(EE_INPUT_DELAY2);
+    AddNumTag("DELAY2", itmp);
+    itmp = EEread_16(EE_INPUT_DELAY3);
+    AddNumTag("DELAY3", itmp);
 
     CloseTag("INPUT");
     strcpy((char*) xmlBuf, XMLBuf);
@@ -1675,12 +1711,58 @@ UINT16 XMLWapp(UINT8 snum, UINT8 *xmlBuf)
     EEread(EE_WAPP5_NAME, lstr, 64);
     AddTag("NAME5", (char*) lstr);
 
-
     CloseTag("WHATSAPP");
     strcpy((char*) xmlBuf, XMLBuf);
     return strlen(XMLBuf);
     }/***** XMLInput() *****/
 
+UINT16 XMLMQTT(UINT8 *xmlBuf)
+    {
+    uint8_t tmp;
+    UINT8 cnt;
+    INT8 *tbuf, slen;
+    UINT32 Adresa;
+    CreateXMLHeader();
+    OpenTag("MQTT");
+    tmp = EEread_8(EE_MQTT_ENABLE);
+    if (tmp == 0)
+	AddTag("ENABLE", "OFF");
+    else
+	AddTag("ENABLE", "ON");	//--------<ENABLE>
+
+    EEread(EE_MQTT_SERVER, twi_buf, 64);
+    AddTag("SERVER", twi_buf);	//--------<SERVER>
+
+    Adresa = EEread_16(EE_MQTT_PORT);
+    sprintf(tmpBuf, "%d", Adresa);
+    AddTag("PORT", tmpBuf);	//--------<PORT>
+
+    EEread(EE_MQTT_UNAME, twi_buf, 32);
+    AddTag("USERNAME", twi_buf);	//--------<USERNAME>
+
+    EEread(EE_MQTT_PASS, twi_buf, 32);
+    AddTag("PASS", twi_buf);	//--------<PASWORD>
+
+    EEread(EE_MQTT_TOPIC, twi_buf, 64);
+    AddTag("TOPIC", twi_buf);	//--------<TOPIC>
+
+    tmp = EEread_8(EE_MQTT_KEEPALIVE);
+    sprintf(tmpBuf, "%d", tmp);
+    AddTag("KEEPALIVE", tmpBuf);	//--------<KEEPALIVE>
+
+    tmp = EEread_8(EE_MQTT_QOS);
+    sprintf(tmpBuf, "%d", tmp);
+    AddTag("QOS", tmpBuf);	//--------<QOS>
+
+    tmp = EEread_8(EE_MQTT_PERIOD);
+    sprintf(tmpBuf, "%d", tmp);
+    AddTag("PERIOD", tmpBuf);	//--------<PERIOD>
+
+    CloseTag("MQTT");
+    xLen = strlen(XMLBuf);
+    strcpy((char*) xmlBuf, XMLBuf);
+    return strlen(XMLBuf);
+    }/***** XMLMQTT() *****/
 
 /*-----------------------------------------------------------------------**
  ** Funkcija kreira XMLOk.xml file									 **
@@ -1697,3 +1779,72 @@ UINT16 XMLOk(UINT8 *xmlBuf)
     strcpy((char*) xmlBuf, XMLBuf);
     return strlen(XMLBuf);
     }/***** XMLOk.xml() *****/
+
+/*-----------------------------------------------------------------------**
+ ** Funkcija kreira XMLOnline.xml file									 **
+ **-----------------------------------------------------------------------*/
+UINT16 XMLOnlineInput(UINT8 *xmlBuf)
+    {
+    UINT8 cnt;
+    char tbf[8];
+    uint32_t delaytimer, delaysec;
+    uint16_t delayhh, delaymm, delayss;
+
+    CreateXMLHeader();
+    OpenTag("ONLINE");
+
+    EEread(EE_INPUT_NAME1, lstr, 32);
+    AddTag("IN1NAME", (char*) lstr);
+    EEread(EE_INPUT_NAME2, lstr, 32);
+    AddTag("IN2NAME", (char*) lstr);
+    EEread(EE_INPUT_NAME3, lstr, 32);
+    AddTag("IN3NAME", (char*) lstr);
+
+    if (dinput[0].state == 0)
+	AddTag("STAT1", "OPEN");
+    else
+	AddTag("STAT1", "CLOSE");
+    if (dinput[1].state == 0)
+	AddTag("STAT2", "OPEN");
+    else
+	AddTag("STAT2", "CLOSE");
+    if (dinput[2].state == 0)
+	AddTag("STAT3", "OPEN");
+    else
+	AddTag("STAT3", "CLOSE");
+
+    if (dinput[0].alarm == 0)
+	AddTag("ALARM1", "NONE");
+    else
+	AddTag("ALARM1", "ALARM");
+    if (dinput[1].alarm == 0)
+	AddTag("ALARM2", "NONE");
+    else
+	AddTag("ALARM2", "ALARM");
+    if (dinput[2].alarm == 0)
+	AddTag("ALARM3", "NONE");
+    else
+	AddTag("ALARM3", "ALARM");
+
+    for (cnt = 0; cnt < 3; cnt++)
+	{
+	delaytimer = NVRAM_Read32(NV_DELAY_IN1+cnt*4);
+	if (delaytimer)
+	    {
+	    delaysec = dinput[cnt].DELAY - delaytimer;
+	    delayhh = delaysec / 3600;
+	    delaymm = (delaysec - delayhh * 3600) / 60;
+	    delayss = delaysec - delayhh * 3600 - delaymm * 60;
+	    sprintf(tmpBuf, "%d:%d:%d", delayhh, delaymm, delayss);
+	    }
+	else
+	    sprintf(tmpBuf, "0:0:0");
+	AddTag(sDelay[cnt], tmpBuf);
+	}
+
+
+    CloseTag("ONLINE");
+    xLen = strlen(XMLBuf);
+    strcpy((char*) xmlBuf, XMLBuf);
+    return strlen(XMLBuf);
+    }/***** XMLOnline.xml() *****/

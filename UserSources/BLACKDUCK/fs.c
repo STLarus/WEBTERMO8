@@ -357,6 +357,22 @@ err_t fs_open(struct fs_file *file, const char *name)
     	file->pextension = NULL;
     	return ERR_OK;
     	}
+    else if (!strcmp((char*) name, "/mqtt.xml"))
+       	{
+       	file->len = XMLMQTT(file->data);
+       	file->data = XMLBuf;
+       	file->index = file->len;
+       	file->pextension = NULL;
+       	return ERR_OK;
+       	}
+    else if (!strcmp((char*) name, "/onlineinput.xml"))
+       	{
+       	file->len = XMLOnlineInput(file->data);
+       	file->data = XMLBuf;
+       	file->index = file->len;
+       	file->pextension = NULL;
+       	return ERR_OK;
+       	}
     /*--------------------------------------------*/
     //--------XML tagovi-------------------
 

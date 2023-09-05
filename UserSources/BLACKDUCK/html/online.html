@@ -1,591 +1,660 @@
 <html>
 
 <head>
-<link rel="stylesheet" href="jqxbase.css" type="text/css" />
-<link rel="stylesheet" href="jqxredmond.css" type="text/css" />
-<link rel="stylesheet" href="still.css" type="text/css" />
-<style type="text/css">
-    .digital {
-        position: relative; 
-        top: -70; 
-        left: 80px; 
-        font-family: Sans-Serif; 
-        text-align: center; 
-        font-size: 17px; 
-        width: 70px;        
-        background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #fafafa), color-stop(100%, #f3f3f3));
-        background-image: -webkit-linear-gradient(#fafafa, #f3f3f3);
-        background-image: -moz-linear-gradient(#fafafa, #f3f3f3);
-        background-image: -o-linear-gradient(#fafafa, #f3f3f3);
-        background-image: -ms-linear-gradient(#fafafa, #f3f3f3);
-        background-image: linear-gradient(#fafafa, #f3f3f3);
-        -webkit-border-radius: 3px;
-        -moz-border-radius: 3px;
-        -ms-border-radius: 3px;
-        -o-border-radius: 3px;
-        border-radius: 3px;
-        -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        padding: 10px;
+    <link rel="stylesheet" href="jqxbase.css" type="text/css" />
+    <link rel="stylesheet" href="jqxredmond.css" type="text/css" />
+    <link rel="stylesheet" href="still.css" type="text/css" />
+    <style type="text/css">
+        .digital {
+            position: relative;
+            top: -70;
+            left: 80px;
+            font-family: Sans-Serif;
+            text-align: center;
+            font-size: 17px;
+            width: 70px;
+            background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #fafafa), color-stop(100%, #f3f3f3));
+            background-image: -webkit-linear-gradient(#fafafa, #f3f3f3);
+            background-image: -moz-linear-gradient(#fafafa, #f3f3f3);
+            background-image: -o-linear-gradient(#fafafa, #f3f3f3);
+            background-image: -ms-linear-gradient(#fafafa, #f3f3f3);
+            background-image: linear-gradient(#fafafa, #f3f3f3);
+            -webkit-border-radius: 3px;
+            -moz-border-radius: 3px;
+            -ms-border-radius: 3px;
+            -o-border-radius: 3px;
+            border-radius: 3px;
+            -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            padding: 10px;
         }
-</style>
-<script type="text/javascript" src="jquery.js"></script>
-<script type="text/javascript" src="demos.js"></script>
-<script type="text/javascript" src="jqx_all.js"></script>
-<script type="text/javascript" src="jqxgauge.js"></script>
-<script type="text/javascript" src="jqxdraw.js"></script>
-<script type="text/javascript" src="pass.js"></script>
-<script type="text/javascript">
+    </style>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="demos.js"></script>
+    <script type="text/javascript" src="jqx_all.js"></script>
+    <script type="text/javascript" src="jqxgauge.js"></script>
+    <script type="text/javascript" src="jqxdraw.js"></script>
+    <script type="text/javascript" src="pass.js"></script>
+    <script type="text/javascript">
 
-var snumber,slow,shigh;    
-var alhighcolor="lightsalmon";
-var allowcolor="PaleTurquoise";
-var normalcolor="white";
-function OnLoad()
-{
-loadOnline();
-setInterval("loadOnline()", 5000);
-}
+        var snumber, slow, shigh;
+        var alhighcolor = "lightsalmon";
+        var allowcolor = "PaleTurquoise";
+        var normalcolor = "white";
+        function OnLoad() {
+            loadOnline();
+            setInterval("loadOnline()", 5000);
+        }
 
-//*************************************************
-function loadOnline()
-//*************************************************
-{
-var enable1,enable2,enable3,enable4;
-var status1,status2,status3,status4;
-$(document).ready(function(){
-    $.ajax({
-        type: "GET",
-        url: "online.xml?sid="+Math.random(),
-        dataType: "xml",
-        cache: false,
-        success: function(xml){
-            $(xml).find('ONLINE').each(function(){
-                
-/*******************  SENZOR 1   ********************/                
-                slow=parseInt($(this).find('T1LOW').text());
-                shigh=parseInt($(this).find('T1HIGH').text());
-                var status1=$(this).find('STAT1').text();                
-                var atemp1=$(this).find('ALARM1').text();                  
-                var ranges = [{startValue: -40,endValue: slow,style: { fill: '#368bc1', stroke: '#368bc1' }},
-                    {startValue: slow,endValue: shigh,style: { fill: '#5ffb17', stroke: '#5ffb17' }},
-                    {startValue: shigh,endValue: 80,style: { fill: '#f70d1a', stroke: '#f70d1a' }}];
-                if(status1==="DISABLE")
-                    {
-                    $('#S1TEMP').hide();
-                    $('#tlabel1').hide();
-                    }    
-                else
-                    {                        
-                    $('#S1TEMP').show();$('#tlabel1').show();
-                    $('#S1TEMP').jqxGauge({ ranges: ranges });                         
-                    if(status1==="ERROR")
-                        {
-                        $('#S1TEMP').jqxGauge({ style: { fill: '#000000'}}); 
-                        } 
-                    else if(status1==="OK")
-                        {
+        //*************************************************
+        function loadOnline()
+        //*************************************************
+        {
+            var enable1, enable2, enable3, enable4;
+            var status1, status2, status3, status4;
+            $(document).ready(function () {
+                $.ajax({
+                    type: "GET",
+                    url: "online.xml?sid=" + Math.random(),
+                    dataType: "xml",
+                    cache: false,
+                    success: function (xml) {
+                        $(xml).find('ONLINE').each(function () {
 
-                        if(atemp1==="NONE")
-                            $('#S1TEMP').jqxGauge({ style: { fill: normalcolor}}); 
-                        else if(atemp1==="ALLOW")
-                            $('#S1TEMP').jqxGauge({ style: { fill: allowcolor}}); 
-                        else if(atemp1==="ALHIGH")
-                            $('#S1TEMP').jqxGauge({ style: { fill: alhighcolor}}); 
-                        }                 
-                    snumber=parseFloat($(this).find('TEMP1').text());
-                    $('#S1TEMP').jqxGauge('value',snumber);  
+                            /*******************  SENZOR 1   ********************/
+                            slow = parseInt($(this).find('T1LOW').text());
+                            shigh = parseInt($(this).find('T1HIGH').text());
+                            var status1 = $(this).find('STAT1').text();
+                            var atemp1 = $(this).find('ALARM1').text();
+                            var ranges = [{ startValue: -40, endValue: slow, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                            { startValue: slow, endValue: shigh, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                            { startValue: shigh, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }];
+                            if (status1 === "DISABLE") {
+                                $('#S1TEMP').hide();
+                                $('#tlabel1').hide();
+                            }
+                            else {
+                                $('#S1TEMP').show(); $('#tlabel1').show();
+                                $('#S1TEMP').jqxGauge({ ranges: ranges });
+                                if (status1 === "ERROR") {
+                                    $('#S1TEMP').jqxGauge({ style: { fill: '#000000' } });
+                                }
+                                else if (status1 === "OK") {
+
+                                    if (atemp1 === "NONE")
+                                        $('#S1TEMP').jqxGauge({ style: { fill: normalcolor } });
+                                    else if (atemp1 === "ALLOW")
+                                        $('#S1TEMP').jqxGauge({ style: { fill: allowcolor } });
+                                    else if (atemp1 === "ALHIGH")
+                                        $('#S1TEMP').jqxGauge({ style: { fill: alhighcolor } });
+                                }
+                                snumber = parseFloat($(this).find('TEMP1').text());
+                                $('#S1TEMP').jqxGauge('value', snumber);
+                            }
+                            /*******************  SENZOR 2   ********************/
+                            slow = parseInt($(this).find('T2LOW').text());
+                            shigh = parseInt($(this).find('T2HIGH').text());
+                            var status2 = $(this).find('STAT2').text();
+                            var atemp2 = $(this).find('ALARM2').text();
+                            ranges = [{ startValue: -40, endValue: slow, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                            { startValue: slow, endValue: shigh, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                            { startValue: shigh, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }];
+                            if (status2 === "DISABLE") {
+                                $('#S2TEMP').hide();
+                                $('#tlabel2').hide();
+                            }
+                            else {
+                                $('#S2TEMP').show(); $('#tlabel2').show();
+                                $('#S2TEMP').jqxGauge({ ranges: ranges });
+                                if (status2 === "ERROR") {
+                                    $('#S2TEMP').jqxGauge({ style: { fill: '#000000' } });
+                                }
+                                else if (status2 === "OK") {
+                                    if (atemp2 === "NONE")
+                                        $('#S2TEMP').jqxGauge({ style: { fill: normalcolor } });
+                                    else if (atemp2 === "ALLOW")
+                                        $('#S2TEMP').jqxGauge({ style: { fill: allowcolor } });
+                                    else if (atemp2 === "ALHIGH")
+                                        $('#S2TEMP').jqxGauge({ style: { fill: alhighcolor } });
+                                }
+                                snumber = parseFloat($(this).find('TEMP2').text());
+                                $('#S2TEMP').jqxGauge('value', snumber);
+                            }
+                            /*******************  SENZOR 3   ********************/
+                            slow = parseInt($(this).find('T3LOW').text());
+                            shigh = parseInt($(this).find('T3HIGH').text());
+                            var status3 = $(this).find('STAT3').text();
+                            var atemp3 = $(this).find('ALARM3').text();
+                            ranges = [{ startValue: -40, endValue: slow, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                            { startValue: slow, endValue: shigh, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                            { startValue: shigh, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }];
+                            if (status3 === "DISABLE") {
+                                $('#S3TEMP').hide();
+                                $('#tlabel3').hide();
+                            }
+                            else {
+                                $('#S3TEMP').show(); $('#tlabel3').show();
+                                $('#S3TEMP').jqxGauge({ ranges: ranges });
+                                if (status3 === "ERROR") {
+                                    $('#S3TEMP').jqxGauge({ style: { fill: '#000000' } });
+                                }
+                                else if (status3 === "OK") {
+                                    if (atemp3 === "NONE")
+                                        $('#S3TEMP').jqxGauge({ style: { fill: normalcolor } });
+                                    else if (atemp3 === "ALLOW")
+                                        $('#S3TEMP').jqxGauge({ style: { fill: allowcolor } });
+                                    else if (atemp3 === "ALHIGH")
+                                        $('#S3TEMP').jqxGauge({ style: { fill: alhighcolor } });
+                                }
+                                snumber = parseFloat($(this).find('TEMP3').text());
+                                $('#S3TEMP').jqxGauge('value', snumber);
+                            }
+                            /*******************  SENZOR 4   ********************/
+                            slow = parseInt($(this).find('T4LOW').text());
+                            shigh = parseInt($(this).find('T4HIGH').text());
+                            var status4 = $(this).find('STAT4').text();
+                            var atemp4 = $(this).find('ALARM4').text();
+                            ranges = [{ startValue: -40, endValue: slow, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                            { startValue: slow, endValue: shigh, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                            { startValue: shigh, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }];
+                            if (status4 === "DISABLE") {
+                                $('#S4TEMP').hide();
+                                $('#tlabel4').hide();
+                            }
+                            else {
+                                $('#S4TEMP').show(); $('#tlabel4').show();
+                                $('#S4TEMP').jqxGauge({ ranges: ranges });
+                                if (status4 === "ERROR") {
+                                    $('#S4TEMP').jqxGauge({ style: { fill: '#000000' } });
+                                }
+                                else if (status4 === "OK") {
+                                    if (atemp4 === "NONE")
+                                        $('#S4TEMP').jqxGauge({ style: { fill: normalcolor } });
+                                    else if (atemp4 === "ALLOW")
+                                        $('#S4TEMP').jqxGauge({ style: { fill: allowcolor } });
+                                    else if (atemp4 === "ALHIGH")
+                                        $('#S4TEMP').jqxGauge({ style: { fill: alhighcolor } });
+                                }
+                                snumber = parseFloat($(this).find('TEMP4').text());
+                                $('#S4TEMP').jqxGauge('value', snumber);
+                            }
+                            /*******************  SENZOR 5  ********************/
+                            slow = parseInt($(this).find('T5LOW').text());
+                            shigh = parseInt($(this).find('T5HIGH').text());
+                            var status5 = $(this).find('STAT5').text();
+                            var atemp5 = $(this).find('ALARM5').text();
+                            ranges = [{ startValue: -40, endValue: slow, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                            { startValue: slow, endValue: shigh, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                            { startValue: shigh, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }];
+                            if (status5 === "DISABLE") {
+                                $('#S5TEMP').hide();
+                                $('#tlabel5').hide();
+                            }
+                            else {
+                                $('#S5TEMP').show(); $('#tlabel5').show();
+                                $('#S5TEMP').jqxGauge({ ranges: ranges });
+                                if (status5 === "ERROR") {
+                                    $('#S5TEMP').jqxGauge({ style: { fill: '#000000' } });
+                                }
+                                else if (status5 === "OK") {
+                                    if (atemp5 === "NONE")
+                                        $('#S5TEMP').jqxGauge({ style: { fill: normalcolor } });
+                                    else if (atemp5 === "ALLOW")
+                                        $('#S5TEMP').jqxGauge({ style: { fill: allowcolor } });
+                                    else if (atemp5 === "ALHIGH")
+                                        $('#S5TEMP').jqxGauge({ style: { fill: alhighcolor } });
+                                }
+                                snumber = parseFloat($(this).find('TEMP5').text());
+                                $('#S5TEMP').jqxGauge('value', snumber);
+                            }
+                            /*******************  SENZOR 6  ********************/
+                            slow = parseInt($(this).find('T6LOW').text());
+                            shigh = parseInt($(this).find('T6HIGH').text());
+                            var status6 = $(this).find('STAT6').text();
+                            var atemp6 = $(this).find('ALARM6').text();
+                            ranges = [{ startValue: -40, endValue: slow, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                            { startValue: slow, endValue: shigh, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                            { startValue: shigh, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }];
+                            if (status6 === "DISABLE") {
+                                $('#S6TEMP').hide();
+                                $('#tlabel6').hide();
+                            }
+                            else {
+                                $('#S6TEMP').show(); $('#tlabel6').show();
+                                $('#S6TEMP').jqxGauge({ ranges: ranges });
+                                if (status6 === "ERROR") {
+                                    $('#S6TEMP').jqxGauge({ style: { fill: '#000000' } });
+                                }
+                                else if (status6 === "OK") {
+                                    if (atemp6 === "NONE")
+                                        $('#S6TEMP').jqxGauge({ style: { fill: normalcolor } });
+                                    else if (atemp6 === "ALLOW")
+                                        $('#S6TEMP').jqxGauge({ style: { fill: allowcolor } });
+                                    else if (atemp6 === "ALHIGH")
+                                        $('#S6TEMP').jqxGauge({ style: { fill: alhighcolor } });
+                                }
+                                snumber = parseFloat($(this).find('TEMP6').text());
+                                $('#S6TEMP').jqxGauge('value', snumber);
+                            }
+                            /*******************  SENZOR 7  ********************/
+                            slow = parseInt($(this).find('T7LOW').text());
+                            shigh = parseInt($(this).find('T7HIGH').text());
+                            var status7 = $(this).find('STAT7').text();
+                            var atemp7 = $(this).find('ALARM7').text();
+                            ranges = [{ startValue: -40, endValue: slow, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                            { startValue: slow, endValue: shigh, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                            { startValue: shigh, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }];
+                            if (status7 === "DISABLE") {
+                                $('#S7TEMP').hide();
+                                $('#tlabel7').hide();
+                            }
+                            else {
+                                $('#S7TEMP').show(); $('#tlabel7').show();
+                                $('#S7TEMP').jqxGauge({ ranges: ranges });
+                                if (status7 === "ERROR") {
+                                    $('#S7TEMP').jqxGauge({ style: { fill: '#000000' } });
+                                }
+                                else if (status7 === "OK") {
+                                    if (atemp7 === "NONE")
+                                        $('#S7TEMP').jqxGauge({ style: { fill: normalcolor } });
+                                    else if (atemp7 === "ALLOW")
+                                        $('#S7TEMP').jqxGauge({ style: { fill: allowcolor } });
+                                    else if (atemp7 === "ALHIGH")
+                                        $('#S7TEMP').jqxGauge({ style: { fill: alhighcolor } });
+                                }
+                                snumber = parseFloat($(this).find('TEMP7').text());
+                                $('#S7TEMP').jqxGauge('value', snumber);
+                            }
+                            /*******************  SENZOR 8  ********************/
+                            slow = parseInt($(this).find('T8LOW').text());
+                            shigh = parseInt($(this).find('T8HIGH').text());
+                            var status8 = $(this).find('STAT8').text();
+                            var atemp8 = $(this).find('ALARM8').text();
+                            ranges = [{ startValue: -40, endValue: slow, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                            { startValue: slow, endValue: shigh, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                            { startValue: shigh, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }];
+                            if (status8 === "DISABLE") {
+                                $('#S8TEMP').hide();
+                                $('#tlabel8').hide();
+                            }
+                            else {
+                                $('#S8TEMP').show(); $('#tlabel8').show();
+                                $('#S8TEMP').jqxGauge({ ranges: ranges });
+                                if (status8 === "ERROR") {
+                                    $('#S8TEMP').jqxGauge({ style: { fill: '#000000' } });
+                                }
+                                else if (status8 === "OK") {
+                                    if (atemp8 === "NONE")
+                                        $('#S8TEMP').jqxGauge({ style: { fill: normalcolor } });
+                                    else if (atemp8 === "ALLOW")
+                                        $('#S8TEMP').jqxGauge({ style: { fill: allowcolor } });
+                                    else if (atemp8 === "ALHIGH")
+                                        $('#S8TEMP').jqxGauge({ style: { fill: alhighcolor } });
+                                }
+                                snumber = parseFloat($(this).find('TEMP8').text());
+                                $('#S8TEMP').jqxGauge('value', snumber);
+                            }
+                            if (atemp1 === "ALLOW" || atemp1 === "ALHIGH")
+                                $('#delay1').text("DELAY   " + $(this).find('DELAY1').text());
+                            else
+                                $('#delay1').text("");
+                            if (atemp2 === "ALLOW" || atemp2 === "ALHIGH")
+                                $('#delay2').text("DELAY   " + $(this).find('DELAY2').text());
+                            else
+                                $('#delay2').text("");
+                            if (atemp3 === "ALLOW" || atemp3 === "ALHIGH")
+                                $('#delay3').text("DELAY   " + $(this).find('DELAY3').text());
+                            else
+                                $('#delay3').text("");
+                            if (atemp4 === "ALLOW" || atemp4 === "ALHIGH")
+                                $('#delay4').text("DELAY   " + $(this).find('DELAY4').text());
+                            else
+                                $('#delay4').text("");
+                            if (atemp5 === "ALLOW" || atemp5 === "ALHIGH")
+                                $('#delay5').text("DELAY   " + $(this).find('DELAY5').text());
+                            else
+                                $('#delay5').text("");
+                            if (atemp6 === "ALLOW" || atemp6 === "ALHIGH")
+                                $('#delay6').text("DELAY   " + $(this).find('DELAY6').text());
+                            else
+                                $('#delay6').text("");
+                            if (atemp7 === "ALLOW" || atemp7 === "ALHIGH")
+                                $('#delay7').text("DELAY   " + $(this).find('DELAY7').text());
+                            else
+                                $('#delay7').text("");
+                            if (atemp8 === "ALLOW" || atemp8 === "ALHIGH")
+                                $('#delay8').text("DELAY   " + $(this).find('DELAY8').text());
+                            else
+                                $('#delay8').text("");
+
+
+                            $('#name1').text($(this).find('NAME1').text());
+                            $('#name2').text($(this).find('NAME2').text());
+                            $('#name3').text($(this).find('NAME3').text());
+                            $('#name4').text($(this).find('NAME4').text());
+                            $('#name5').text($(this).find('NAME5').text());
+                            $('#name6').text($(this).find('NAME6').text());
+                            $('#name7').text($(this).find('NAME7').text());
+                            $('#name8').text($(this).find('NAME8').text());
+
+                        });
                     }
-/*******************  SENZOR 2   ********************/                
-                slow=parseInt($(this).find('T2LOW').text());
-                shigh=parseInt($(this).find('T2HIGH').text());
-                var status2=$(this).find('STAT2').text();                
-                var atemp2=$(this).find('ALARM2').text();                  
-                ranges = [{startValue: -40,endValue: slow,style: { fill: '#368bc1', stroke: '#368bc1' }},
-                    {startValue: slow,endValue: shigh,style: { fill: '#5ffb17', stroke: '#5ffb17' }},
-                    {startValue: shigh,endValue: 80,style: { fill: '#f70d1a', stroke: '#f70d1a' }}];
-                if(status2==="DISABLE")
-                    {
-                    $('#S2TEMP').hide();
-                    $('#tlabel2').hide();
-                    }    
-                else
-                    {
-                    $('#S2TEMP').show();$('#tlabel2').show();                        
-                    $('#S2TEMP').jqxGauge({ ranges: ranges });                         
-                    if(status2==="ERROR")
-                        {
-                         $('#S2TEMP').jqxGauge({ style: { fill: '#000000'}}); 
-                        } 
-                    else if(status2==="OK")
-                        {
-                        if(atemp2==="NONE")
-                            $('#S2TEMP').jqxGauge({ style: { fill: normalcolor}}); 
-                        else if(atemp2==="ALLOW")
-                            $('#S2TEMP').jqxGauge({ style: { fill: allowcolor}}); 
-                        else if(atemp2==="ALHIGH")
-                            $('#S2TEMP').jqxGauge({ style: { fill: alhighcolor}}); 
-                        }                 
-                    snumber=parseFloat($(this).find('TEMP2').text());
-                    $('#S2TEMP').jqxGauge('value',snumber);  
-                    }
-/*******************  SENZOR 3   ********************/                
-                slow=parseInt($(this).find('T3LOW').text());
-                shigh=parseInt($(this).find('T3HIGH').text());
-                var status3=$(this).find('STAT3').text();                
-                var atemp3=$(this).find('ALARM3').text();                  
-                ranges = [{startValue: -40,endValue: slow,style: { fill: '#368bc1', stroke: '#368bc1' }},
-                    {startValue: slow,endValue: shigh,style: { fill: '#5ffb17', stroke: '#5ffb17' }},
-                    {startValue: shigh,endValue: 80,style: { fill: '#f70d1a', stroke: '#f70d1a' }}];
-                if(status3==="DISABLE")
-                    {
-                    $('#S3TEMP').hide();
-                    $('#tlabel3').hide();
-                    }    
-                else
-                    {
-                    $('#S3TEMP').show();$('#tlabel3').show();                        
-                    $('#S3TEMP').jqxGauge({ ranges: ranges });                         
-                    if(status3==="ERROR")
-                        {
-                         $('#S3TEMP').jqxGauge({ style: { fill: '#000000'}}); 
-                        } 
-                    else if(status3==="OK")
-                        {
-                        if(atemp3==="NONE")
-                            $('#S3TEMP').jqxGauge({ style: { fill: normalcolor}}); 
-                        else if(atemp3==="ALLOW")
-                            $('#S3TEMP').jqxGauge({ style: { fill: allowcolor}}); 
-                        else if(atemp3==="ALHIGH")
-                            $('#S3TEMP').jqxGauge({ style: { fill: alhighcolor}}); 
-                        }                 
-                    snumber=parseFloat($(this).find('TEMP3').text());
-                    $('#S3TEMP').jqxGauge('value',snumber);  
-                    }                    
-/*******************  SENZOR 4   ********************/                
-                slow=parseInt($(this).find('T4LOW').text());
-                shigh=parseInt($(this).find('T4HIGH').text());
-                var status4=$(this).find('STAT4').text();                
-                var atemp4=$(this).find('ALARM4').text();                  
-                ranges = [{startValue: -40,endValue: slow,style: { fill: '#368bc1', stroke: '#368bc1' }},
-                    {startValue: slow,endValue: shigh,style: { fill: '#5ffb17', stroke: '#5ffb17' }},
-                    {startValue: shigh,endValue: 80,style: { fill: '#f70d1a', stroke: '#f70d1a' }}];
-                if(status4==="DISABLE")
-                    {
-                    $('#S4TEMP').hide();
-                    $('#tlabel4').hide();
-                    }    
-                else
-                    {
-                    $('#S4TEMP').show();$('#tlabel4').show();                        
-                    $('#S4TEMP').jqxGauge({ ranges: ranges });                         
-                    if(status4==="ERROR")
-                        {
-                         $('#S4TEMP').jqxGauge({ style: { fill: '#000000'}}); 
-                        } 
-                    else if(status4==="OK")
-                        {
-                        if(atemp4==="NONE")
-                            $('#S4TEMP').jqxGauge({ style: { fill: normalcolor}}); 
-                        else if(atemp4==="ALLOW")
-                            $('#S4TEMP').jqxGauge({ style: { fill: allowcolor}}); 
-                        else if(atemp4==="ALHIGH")
-                            $('#S4TEMP').jqxGauge({ style: { fill: alhighcolor}}); 
-                        }                 
-                    snumber=parseFloat($(this).find('TEMP4').text());
-                    $('#S4TEMP').jqxGauge('value',snumber);  
-                    }                                 
-/*******************  SENZOR 5  ********************/                
-                slow=parseInt($(this).find('T5LOW').text());
-                shigh=parseInt($(this).find('T5HIGH').text());
-                var status5=$(this).find('STAT5').text();                
-                var atemp5=$(this).find('ALARM5').text();                  
-                ranges = [{startValue: -40,endValue: slow,style: { fill: '#368bc1', stroke: '#368bc1' }},
-                    {startValue: slow,endValue: shigh,style: { fill: '#5ffb17', stroke: '#5ffb17' }},
-                    {startValue: shigh,endValue: 80,style: { fill: '#f70d1a', stroke: '#f70d1a' }}];
-                if(status5==="DISABLE")
-                    {
-                    $('#S5TEMP').hide();
-                    $('#tlabel5').hide();
-                    }    
-                else
-                    {
-                    $('#S5TEMP').show();$('#tlabel5').show();                        
-                    $('#S5TEMP').jqxGauge({ ranges: ranges });                         
-                    if(status5==="ERROR")
-                        {
-                         $('#S5TEMP').jqxGauge({ style: { fill: '#000000'}}); 
-                        } 
-                    else if(status5==="OK")
-                        {
-                        if(atemp5==="NONE")
-                            $('#S5TEMP').jqxGauge({ style: { fill: normalcolor}}); 
-                        else if(atemp5==="ALLOW")
-                            $('#S5TEMP').jqxGauge({ style: { fill: allowcolor}}); 
-                        else if(atemp5==="ALHIGH")
-                            $('#S5TEMP').jqxGauge({ style: { fill: alhighcolor}}); 
-                        }                 
-                    snumber=parseFloat($(this).find('TEMP5').text());
-                    $('#S5TEMP').jqxGauge('value',snumber);  
-                    }                      
-/*******************  SENZOR 6  ********************/                
-                slow=parseInt($(this).find('T6LOW').text());
-                shigh=parseInt($(this).find('T6HIGH').text());
-                var status6=$(this).find('STAT6').text();                
-                var atemp6=$(this).find('ALARM6').text();                  
-                ranges = [{startValue: -40,endValue: slow,style: { fill: '#368bc1', stroke: '#368bc1' }},
-                    {startValue: slow,endValue: shigh,style: { fill: '#5ffb17', stroke: '#5ffb17' }},
-                    {startValue: shigh,endValue: 80,style: { fill: '#f70d1a', stroke: '#f70d1a' }}];
-                if(status6==="DISABLE")
-                    {
-                    $('#S6TEMP').hide();
-                    $('#tlabel6').hide();
-                    }    
-                else
-                    {
-                    $('#S6TEMP').show();$('#tlabel6').show();                        
-                    $('#S6TEMP').jqxGauge({ ranges: ranges });                         
-                    if(status6==="ERROR")
-                        {
-                         $('#S6TEMP').jqxGauge({ style: { fill: '#000000'}}); 
-                        } 
-                    else if(status6==="OK")
-                        {
-                        if(atemp6==="NONE")
-                            $('#S6TEMP').jqxGauge({ style: { fill: normalcolor}}); 
-                        else if(atemp6==="ALLOW")
-                            $('#S6TEMP').jqxGauge({ style: { fill: allowcolor}}); 
-                        else if(atemp6==="ALHIGH")
-                            $('#S6TEMP').jqxGauge({ style: { fill: alhighcolor}}); 
-                        }                 
-                    snumber=parseFloat($(this).find('TEMP6').text());
-                    $('#S6TEMP').jqxGauge('value',snumber);  
-                    }                           
-/*******************  SENZOR 7  ********************/                
-                slow=parseInt($(this).find('T7LOW').text());
-                shigh=parseInt($(this).find('T7HIGH').text());
-                var status7=$(this).find('STAT7').text();                
-                var atemp7=$(this).find('ALARM7').text();                  
-                ranges = [{startValue: -40,endValue: slow,style: { fill: '#368bc1', stroke: '#368bc1' }},
-                    {startValue: slow,endValue: shigh,style: { fill: '#5ffb17', stroke: '#5ffb17' }},
-                    {startValue: shigh,endValue: 80,style: { fill: '#f70d1a', stroke: '#f70d1a' }}];
-                if(status7==="DISABLE")
-                    {
-                    $('#S7TEMP').hide();
-                    $('#tlabel7').hide();
-                    }    
-                else
-                    {
-                    $('#S7TEMP').show();$('#tlabel7').show();                        
-                    $('#S7TEMP').jqxGauge({ ranges: ranges });                         
-                    if(status7==="ERROR")
-                        {
-                         $('#S7TEMP').jqxGauge({ style: { fill: '#000000'}}); 
-                        } 
-                    else if(status7==="OK")
-                        {
-                        if(atemp7==="NONE")
-                            $('#S7TEMP').jqxGauge({ style: { fill: normalcolor}}); 
-                        else if(atemp7==="ALLOW")
-                            $('#S7TEMP').jqxGauge({ style: { fill: allowcolor}}); 
-                        else if(atemp7==="ALHIGH")
-                            $('#S7TEMP').jqxGauge({ style: { fill: alhighcolor}}); 
-                        }                 
-                    snumber=parseFloat($(this).find('TEMP7').text());
-                    $('#S7TEMP').jqxGauge('value',snumber);  
-                    }    
-/*******************  SENZOR 8  ********************/                
-                slow=parseInt($(this).find('T8LOW').text());
-                shigh=parseInt($(this).find('T8HIGH').text());
-                var status8=$(this).find('STAT8').text();                
-                var atemp8=$(this).find('ALARM8').text();                  
-                ranges = [{startValue: -40,endValue: slow,style: { fill: '#368bc1', stroke: '#368bc1' }},
-                    {startValue: slow,endValue: shigh,style: { fill: '#5ffb17', stroke: '#5ffb17' }},
-                    {startValue: shigh,endValue: 80,style: { fill: '#f70d1a', stroke: '#f70d1a' }}];
-                if(status8==="DISABLE")
-                    {
-                    $('#S8TEMP').hide();
-                    $('#tlabel8').hide();
-                    }    
-                else
-                    {
-                    $('#S8TEMP').show();$('#tlabel8').show();                        
-                    $('#S8TEMP').jqxGauge({ ranges: ranges });                         
-                    if(status8==="ERROR")
-                        {
-                         $('#S8TEMP').jqxGauge({ style: { fill: '#000000'}}); 
-                        } 
-                    else if(status8==="OK")
-                        {
-                        if(atemp8==="NONE")
-                            $('#S8TEMP').jqxGauge({ style: { fill: normalcolor}}); 
-                        else if(atemp8==="ALLOW")
-                            $('#S8TEMP').jqxGauge({ style: { fill: allowcolor}}); 
-                        else if(atemp8==="ALHIGH")
-                            $('#S8TEMP').jqxGauge({ style: { fill: alhighcolor}}); 
-                        }                 
-                    snumber=parseFloat($(this).find('TEMP8').text());
-                    $('#S8TEMP').jqxGauge('value',snumber);  
-                    }                        
-                    
-                    
-                    
-                $( '#name1').text( $(this).find('NAME1').text());   
-                $( '#name2').text(  $(this).find('NAME2').text());  
-                $( '#name3').text( $(this).find('NAME3').text());
-                $( '#name4').text(  $(this).find('NAME4').text());  
-                $( '#name5').text( $(this).find('NAME5').text());   
-                $( '#name6').text(  $(this).find('NAME6').text());  
-                $( '#name7').text( $(this).find('NAME7').text());
-                $( '#name8').text(  $(this).find('NAME8').text());                    
-                    
                 });
-            }
-        });
-    });
-}/***** loadOnline() *****/
+            });
+        }/***** loadOnline() *****/
 
+        function sectomin(sekunde) {
+            var minute = Math.floor(sekunde / 60);
+            var sekundeZaFormat = sekunde % 60;
 
+            var formatiraneMinute = minute < 10 ? "0" + minute : minute;
+            var formatiraneSekunde = sekundeZaFormat < 10 ? "0" + sekundeZaFormat : sekundeZaFormat;
 
-</script>
+            return formatiraneMinute + ":" + formatiraneSekunde;
+        }
+
+    </script>
 </head>
 
-<body onLoad="OnLoad()" >
-<div id='content'>
-    <script type="text/javascript">
-        $(document).ready(function () {
-            loadmenu();
-            $('#S1TEMP').jqxGauge({
-              ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
-                     { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
-                     { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
-                ticksMinor: { interval: 5, size: '5%' },
-                ticksMajor: { interval: 10, size: '9%' },
-                min: -40,
-                max: 80,
-                value: 0,
-                width:250,
-                height:250,
-                colorScheme: 'scheme05',
-                animationDuration: 200
-            });
-            $('#S1TEMP').on('valueChanging', function (e) {
-                $('#tlabel1').text(e.args.value.toFixed(1) + ' C');
-            });  
-            
-           $('#S2TEMP').jqxGauge({
-              ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
-                     { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
-                     { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
-                ticksMinor: { interval: 5, size: '5%' },
-                ticksMajor: { interval: 10, size: '9%' },
-                min: -40,
-                max: 80,
-                value: 0,
-                width:250,
-                height:250,
-                colorScheme: 'scheme05',
-                animationDuration: 200
-            });
-            $('#S2TEMP').on('valueChanging', function (e) {
-                $('#tlabel2').text(e.args.value.toFixed(1) + ' C');
-            });    
-            
-            $('#S3TEMP').jqxGauge({
-              ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
-                     { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
-                     { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
-                ticksMinor: { interval: 5, size: '5%' },
-                ticksMajor: { interval: 10, size: '9%' },
-                min: -40,
-                max: 80,
-                value: 0,
-                width:250,
-                height:250,
-                colorScheme: 'scheme05',
-                animationDuration: 200
-            });
-            $('#S3TEMP').on('valueChanging', function (e) {
-                $('#tlabel3').text(e.args.value.toFixed(1) + ' C');
-            });                
-            
-            $('#S4TEMP').jqxGauge({
-              ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
-                     { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
-                     { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
-                ticksMinor: { interval: 5, size: '5%' },
-                ticksMajor: { interval: 10, size: '9%' },
-                min: -40,
-                max: 80,
-                value: 0,
-                width:250,
-                height:250,
-                colorScheme: 'scheme05',
-                animationDuration: 200
-            });
-            $('#S4TEMP').on('valueChanging', function (e) {
-                $('#tlabel4').text(e.args.value.toFixed(1) + ' C');
-            });                
-        
-            $('#S5TEMP').jqxGauge({
-              ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
-                     { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
-                     { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
-                ticksMinor: { interval: 5, size: '5%' },
-                ticksMajor: { interval: 10, size: '9%' },
-                min: -40,
-                max: 80,
-                value: 0,
-                width:250,
-                height:250,
-                colorScheme: 'scheme05',
-                animationDuration: 200
-            });
-            $('#S5TEMP').on('valueChanging', function (e) {
-                $('#tlabel5').text(e.args.value.toFixed(1) + ' C');
-            });                  
- 
-            $('#S6TEMP').jqxGauge({
-              ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
-                     { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
-                     { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
-                ticksMinor: { interval: 5, size: '5%' },
-                ticksMajor: { interval: 10, size: '9%' },
-                min: -40,
-                max: 80,
-                value: 0,
-                width:250,
-                height:250,
-                colorScheme: 'scheme05',
-                animationDuration: 200
-            });
-            $('#S6TEMP').on('valueChanging', function (e) {
-                $('#tlabel6').text(e.args.value.toFixed(1) + ' C');
-            });                          
-        
-             $('#S7TEMP').jqxGauge({
-              ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
-                     { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
-                     { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
-                ticksMinor: { interval: 5, size: '5%' },
-                ticksMajor: { interval: 10, size: '9%' },
-                min: -40,
-                max: 80,
-                value: 0,
-                width:250,
-                height:250,
-                colorScheme: 'scheme05',
-                animationDuration: 200
-            });
-            $('#S7TEMP').on('valueChanging', function (e) {
-                $('#tlabel7').text(e.args.value.toFixed(1) + ' C');
-            });  
-            
-            $('#S8TEMP').jqxGauge({
-              ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
-                     { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
-                     { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
-                ticksMinor: { interval: 5, size: '5%' },
-                ticksMajor: { interval: 10, size: '9%' },
-                min: -40,
-                max: 80,
-                value: 0,
-                width:250,
-                height:250,
-                colorScheme: 'scheme05',
-                animationDuration: 200
-            });
-            $('#S8TEMP').on('valueChanging', function (e) {
-                $('#tlabel8').text(e.args.value.toFixed(1) + ' C');
-            });                              
-            
-            $( '#name1').text( "SENZOR 1");   
-            $( '#name2').text( "SENZOR 2");  
-            $( '#name3').text( "SENZOR 3");
-            $( '#name4').text( "SENZOR 4"); 
-            $( '#name5').text( "SENZOR 5");   
-            $( '#name6').text( "SENZOR 6");  
-            $( '#name7').text( "SENZOR 7");
-            $( '#name8').text( "SENZOR 8");                
-        });
-    </script>
-    
-    <div class="logo_row">
-        <div class="logo_left"><img src="logot.gif" /></div>
-       <div class="logo_center"><h2 class="webenergy">WEBTERMO</h2></div>
-        <div class="logo_right"></div>
-    </div>
-    <div id='jqxMenu'></div>
-    <div style="height:20px" ></div>
-</div>	
-<table  width="1000" border="0" align="center">
-  <tr class="online_sensorname">
-    <td width="250"><div id='name1'></div></td>
-    <td width="250"><div id='name2'></div></td>
-    <td width="250"><div id='name3'></div></td>
-    <td width="250"><div id='name4'></div></td>    
-    </tr>    
-  <tr>
-    <td width="250">
-        <div>
-        <div id='S1TEMP'></div> 
-        <div id="tlabel1" class="digital" ></div>
-        </div>
-    </td>
-    <td width="250">        
-        <div>
-        <div id='S2TEMP'></div> 
-        <div id="tlabel2" class="digital" ></div>
-        </div>
-    </td>
-    <td width="250">        
-        <div>
-        <div id='S3TEMP'></div> 
-        <div id="tlabel3" class="digital" ></div>
-        </div>
-    </td>
-    <td width="250">        
-        <div>
-        <div id='S4TEMP'></div> 
-        <div id="tlabel4" class="digital" ></div>
-        </div>
-    </td> 
-  </tr>  
-  <tr class="online_sensorname">
-    <td width="250"><div id='name5'></div></td>
-    <td width="250"><div id='name6'></div></td>
-    <td width="250"><div id='name7'></div></td>
-    <td width="250"><div id='name8'></div></td>    
-    </tr>      
-  <tr>
-    <td width="250">        
-        <div>
-        <div id='S5TEMP'></div> 
-        <div id="tlabel5" class="digital" ></div>
-        </div>
-    </td>     
-    <td width="250">        
-        <div>
-        <div id='S6TEMP'></div> 
-        <div id="tlabel6" class="digital" ></div>
-        </div>
-    </td>
-    <td width="250">        
-        <div>
-        <div id='S7TEMP'></div> 
-        <div id="tlabel7" class="digital" ></div>
-        </div>
-    </td>     
-    <td width="250">        
-        <div>
-        <div id='S8TEMP'></div> 
-        <div id="tlabel8" class="digital" ></div>
-        </div>
-    </td>  </tr>    
+<body onLoad="OnLoad()">
+    <div id='content'>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                loadmenu();
+                $('#S1TEMP').jqxGauge({
+                    ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                    { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                    { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
+                    ticksMinor: { interval: 5, size: '5%' },
+                    ticksMajor: { interval: 10, size: '9%' },
+                    min: -40,
+                    max: 80,
+                    value: 0,
+                    width: 250,
+                    height: 250,
+                    colorScheme: 'scheme05',
+                    animationDuration: 200
+                });
+                $('#S1TEMP').on('valueChanging', function (e) {
+                    $('#tlabel1').text(e.args.value.toFixed(1) + ' C');
+                });
 
-</table>
+                $('#S2TEMP').jqxGauge({
+                    ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                    { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                    { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
+                    ticksMinor: { interval: 5, size: '5%' },
+                    ticksMajor: { interval: 10, size: '9%' },
+                    min: -40,
+                    max: 80,
+                    value: 0,
+                    width: 250,
+                    height: 250,
+                    colorScheme: 'scheme05',
+                    animationDuration: 200
+                });
+                $('#S2TEMP').on('valueChanging', function (e) {
+                    $('#tlabel2').text(e.args.value.toFixed(1) + ' C');
+                });
+
+                $('#S3TEMP').jqxGauge({
+                    ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                    { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                    { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
+                    ticksMinor: { interval: 5, size: '5%' },
+                    ticksMajor: { interval: 10, size: '9%' },
+                    min: -40,
+                    max: 80,
+                    value: 0,
+                    width: 250,
+                    height: 250,
+                    colorScheme: 'scheme05',
+                    animationDuration: 200
+                });
+                $('#S3TEMP').on('valueChanging', function (e) {
+                    $('#tlabel3').text(e.args.value.toFixed(1) + ' C');
+                });
+
+                $('#S4TEMP').jqxGauge({
+                    ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                    { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                    { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
+                    ticksMinor: { interval: 5, size: '5%' },
+                    ticksMajor: { interval: 10, size: '9%' },
+                    min: -40,
+                    max: 80,
+                    value: 0,
+                    width: 250,
+                    height: 250,
+                    colorScheme: 'scheme05',
+                    animationDuration: 200
+                });
+                $('#S4TEMP').on('valueChanging', function (e) {
+                    $('#tlabel4').text(e.args.value.toFixed(1) + ' C');
+                });
+
+                $('#S5TEMP').jqxGauge({
+                    ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                    { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                    { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
+                    ticksMinor: { interval: 5, size: '5%' },
+                    ticksMajor: { interval: 10, size: '9%' },
+                    min: -40,
+                    max: 80,
+                    value: 0,
+                    width: 250,
+                    height: 250,
+                    colorScheme: 'scheme05',
+                    animationDuration: 200
+                });
+                $('#S5TEMP').on('valueChanging', function (e) {
+                    $('#tlabel5').text(e.args.value.toFixed(1) + ' C');
+                });
+
+                $('#S6TEMP').jqxGauge({
+                    ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                    { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                    { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
+                    ticksMinor: { interval: 5, size: '5%' },
+                    ticksMajor: { interval: 10, size: '9%' },
+                    min: -40,
+                    max: 80,
+                    value: 0,
+                    width: 250,
+                    height: 250,
+                    colorScheme: 'scheme05',
+                    animationDuration: 200
+                });
+                $('#S6TEMP').on('valueChanging', function (e) {
+                    $('#tlabel6').text(e.args.value.toFixed(1) + ' C');
+                });
+
+                $('#S7TEMP').jqxGauge({
+                    ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                    { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                    { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
+                    ticksMinor: { interval: 5, size: '5%' },
+                    ticksMajor: { interval: 10, size: '9%' },
+                    min: -40,
+                    max: 80,
+                    value: 0,
+                    width: 250,
+                    height: 250,
+                    colorScheme: 'scheme05',
+                    animationDuration: 200
+                });
+                $('#S7TEMP').on('valueChanging', function (e) {
+                    $('#tlabel7').text(e.args.value.toFixed(1) + ' C');
+                });
+
+                $('#S8TEMP').jqxGauge({
+                    ranges: [{ startValue: -40, endValue: -20, style: { fill: '#368bc1', stroke: '#368bc1' } },
+                    { startValue: -20, endValue: -10, style: { fill: '#5ffb17', stroke: '#5ffb17' } },
+                    { startValue: -10, endValue: 80, style: { fill: '#f70d1a', stroke: '#f70d1a' } }],
+                    ticksMinor: { interval: 5, size: '5%' },
+                    ticksMajor: { interval: 10, size: '9%' },
+                    min: -40,
+                    max: 80,
+                    value: 0,
+                    width: 250,
+                    height: 250,
+                    colorScheme: 'scheme05',
+                    animationDuration: 200
+                });
+                $('#S8TEMP').on('valueChanging', function (e) {
+                    $('#tlabel8').text(e.args.value.toFixed(1) + ' C');
+                });
+
+                $('#name1').text("SENZOR 1");
+                $('#name2').text("SENZOR 2");
+                $('#name3').text("SENZOR 3");
+                $('#name4').text("SENZOR 4");
+                $('#name5').text("SENZOR 5");
+                $('#name6').text("SENZOR 6");
+                $('#name7').text("SENZOR 7");
+                $('#name8').text("SENZOR 8");
+            });
+        </script>
+
+        <div class="logo_row">
+            <div class="logo_left"><img src="logot.gif" /></div>
+            <div class="logo_center">
+                <h2 class="webenergy">WEBTERMO</h2>
+            </div>
+            <div class="logo_right"></div>
+        </div>
+        <div id='jqxMenu'></div>
+        <div style="height:20px"></div>
+    </div>
+    <table width="1000" border="0" align="center">
+        <tr class="online_sensorname">
+            <td width="250">
+                <div id='name1'></div>
+            </td>
+            <td width="250">
+                <div id='name2'></div>
+            </td>
+            <td width="250">
+                <div id='name3'></div>
+            </td>
+            <td width="250">
+                <div id='name4'></div>
+            </td>
+        </tr>
+        <tr class="online_delay">
+            <td width="250">
+                <div id='delay1'></div>
+            </td>
+            <td width="250">
+                <div id='delay2'></div>
+            </td>
+            <td width="250">
+                <div id='delay3'></div>
+            </td>
+            <td width="250">
+                <div id='delay4'></div>
+            </td>
+        </tr>
+        <tr>
+            <td width="250">
+                <div>
+                    <div id='S1TEMP'></div>
+                    <div id="tlabel1" class="digital"></div>
+                </div>
+            </td>
+            <td width="250">
+                <div>
+                    <div id='S2TEMP'></div>
+                    <div id="tlabel2" class="digital"></div>
+                </div>
+            </td>
+            <td width="250">
+                <div>
+                    <div id='S3TEMP'></div>
+                    <div id="tlabel3" class="digital"></div>
+                </div>
+            </td>
+            <td width="250">
+                <div>
+                    <div id='S4TEMP'></div>
+                    <div id="tlabel4" class="digital"></div>
+                </div>
+            </td>
+        </tr>
+        
+        <tr class="online_sensorname">
+            <td width="250">
+                <div id='name5'></div>
+            </td>
+            <td width="250">
+                <div id='name6'></div>
+            </td>
+            <td width="250">
+                <div id='name7'></div>
+            </td>
+            <td width="250">
+                <div id='name8'></div>
+            </td>
+        </tr>
+        <tr class="online_delay">
+            <td width="250">
+                <div id='delay5'></div>
+            </td>
+            <td width="250">
+                <div id='delay6'></div>
+            </td>
+            <td width="250">
+                <div id='delay7'></div>
+            </td>
+            <td width="250">
+                <div id='delay8'></div>
+            </td>
+        </tr>
+        <tr>
+            <td width="250">
+                <div>
+                    <div id='S5TEMP'></div>
+                    <div id="tlabel5" class="digital"></div>
+                </div>
+            </td>
+            <td width="250">
+                <div>
+                    <div id='S6TEMP'></div>
+                    <div id="tlabel6" class="digital"></div>
+                </div>
+            </td>
+            <td width="250">
+                <div>
+                    <div id='S7TEMP'></div>
+                    <div id="tlabel7" class="digital"></div>
+                </div>
+            </td>
+            <td width="250">
+                <div>
+                    <div id='S8TEMP'></div>
+                    <div id="tlabel8" class="digital"></div>
+                </div>
+            </td>
+        </tr>
+        <tr class="online_delay">
+            <td width="250">
+                <div id='delay5'></div>
+            </td>
+            <td width="250">
+                <div id='delay6'></div>
+            </td>
+            <td width="250">
+                <div id='delay7'></div>
+            </td>
+            <td width="250">
+                <div id='delay8'></div>
+            </td>
+        </tr>
+
+    </table>
 
 
 </body>
+
 </html>

@@ -24,6 +24,7 @@ extern struct sensor
 //char	NAME[32];
 	UINT8 STATUS;	//
 	UINT8 error_counter;
+	UINT16 DELAY;	//kasnjenje alarma
 	float kalibracija;
     } senzor[8];
 
@@ -155,5 +156,14 @@ extern struct whatsapp
 	char enable4;
 	char enable5;
     } wapp;
+
+extern struct digitalinput
+    {
+	uint8_t enable;	//1..enable;  0..disable
+	uint8_t type;	//1..NC;  2... NO
+	uint8_t state;	//0...OPEN;  1...CLOSE
+	uint8_t alarm;	//0...NOALARM;   1...ALARM
+	uint16_t DELAY;	//kasnjenje alarma
+    } dinput[];
 
 #endif

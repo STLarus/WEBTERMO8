@@ -89,6 +89,7 @@
 #define EE_SMS4         0x23
 #define EE_SMS5         0x24
 #define EE_MEASURE_TYPE 0x25
+#define EE_DELAY 	0x26
 #define EE_CALIB        0x30
 #define EE_SENSOR_NAME  0x40
 
@@ -157,16 +158,32 @@
 #define EE_INPUT_TIP1	EE_INPUT_START + 0x63
 #define EE_INPUT_TIP2	EE_INPUT_START + 0x64
 #define EE_INPUT_TIP3	EE_INPUT_START + 0x65
-#define EE_INPUT_MAIL1	EE_INPUT_START + 0x66
-#define EE_INPUT_MAIL2	EE_INPUT_START + 0x67
-#define EE_INPUT_MAIL3	EE_INPUT_START + 0x68
-#define EE_INPUT_MAIL4	EE_INPUT_START + 0x69
-#define EE_INPUT_MAIL5	EE_INPUT_START + 0x6A
+#define EE_INPUT_WAPP1	EE_INPUT_START + 0x66
+#define EE_INPUT_WAPP2	EE_INPUT_START + 0x67
+#define EE_INPUT_WAPP3	EE_INPUT_START + 0x68
+#define EE_INPUT_WAPP4	EE_INPUT_START + 0x69
+#define EE_INPUT_WAPP5	EE_INPUT_START + 0x6A
 #define EE_INPUT_SMS1	EE_INPUT_START + 0x6B
 #define EE_INPUT_SMS2	EE_INPUT_START + 0x6C
 #define EE_INPUT_SMS3	EE_INPUT_START + 0x6D
 #define EE_INPUT_SMS4	EE_INPUT_START + 0x6E
 #define EE_INPUT_SMS5	EE_INPUT_START + 0x6F
+#define EE_INPUT_DELAY1	EE_INPUT_START + 0x70
+#define EE_INPUT_DELAY2	EE_INPUT_START + 0x72
+#define EE_INPUT_DELAY3	EE_INPUT_START + 0x74
+
+
+//MQTT
+#define	EE_MQTT_START	0x1400
+#define	EE_MQTT_SERVER	EE_MQTT_START + 0x00
+#define	EE_MQTT_UNAME	EE_MQTT_START + 0x80
+#define	EE_MQTT_PASS	EE_MQTT_START + 0xA0
+#define	EE_MQTT_TOPIC	EE_MQTT_START + 0xC0
+#define	EE_MQTT_ENABLE	EE_MQTT_START + 0x100
+#define	EE_MQTT_PORT	EE_MQTT_START + 0x101
+#define	EE_MQTT_QOS	EE_MQTT_START + 0x103
+#define	EE_MQTT_KEEPALIVE	EE_MQTT_START + 0x104
+#define	EE_MQTT_PERIOD	EE_MQTT_START + 0x105
 
 // NVRAM
 #define NV_LOGGER_INIT  0x04
@@ -199,11 +216,24 @@
 #define NV_MKT_SEN1         0x70
 #define NV_MKT_SEN2         0xC0
 #define NV_MKT_SEN3         0x110
-#define NV_MKT_SEN4         0x160
-#define NV_MKT_SEN5         0x180
-#define NV_MKT_SEN6         0x200
-#define NV_MKT_SEN7         0x250
-#define NV_MKT_SEN8         0x2A0
+#define NV_MKT_SEN4         0x1B0
+#define NV_MKT_SEN5         0x200
+#define NV_MKT_SEN6         0x250
+#define NV_MKT_SEN7         0x2A0
+#define NV_MKT_SEN8         0x340
+
+#define	NV_DELAY_SEN1	0x400
+#define	NV_DELAY_SEN2	0x404
+#define	NV_DELAY_SEN3	0x408
+#define	NV_DELAY_SEN4	0x40C
+#define	NV_DELAY_SEN5	0x410
+#define	NV_DELAY_SEN6	0x414
+#define	NV_DELAY_SEN7	0x418
+#define	NV_DELAY_SEN8	0x41C
+
+#define	NV_DELAY_IN1	0x420
+#define	NV_DELAY_IN2	0x424
+#define	NV_DELAY_IN3	0x428
 
 #define NVRAM_Write8(address, value)	(*(__IO uint8_t *) (BKPSRAM_BASE + (address)) = (value))
 #define NVRAM_Read8(address)			(*(__IO uint8_t *) (BKPSRAM_BASE + address))
@@ -234,8 +264,8 @@
 #define DEFAULT_NAZIV_OBJEKTA	"Larus Webtermo"
 #define DEFAULT_DDNS_HOST	"myhostname.com"
 
-#define VERZIJA		"VER-3.0 02022023"
-#define DATUM_VERZIJE	20230202
+#define VERZIJA		"VER-3.0 01082023"
+#define DATUM_VERZIJE	20230801
 
 #define DS1307_BACKUP_REGISTER  RTC_BKP_DR8
 #define DS1307_EXIST    13
@@ -244,6 +274,10 @@
 
 #define WAPP_BUSY	1
 #define WAPP_FREE	0
+
+#define IC_TIMEOUT_MS	50
+#define I2C_TIMEOUT_ERR	23
+
 
 #endif
 

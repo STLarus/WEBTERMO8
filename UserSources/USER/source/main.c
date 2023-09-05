@@ -25,7 +25,7 @@
 RTC_InitTypeDef RTC_InitStructure;
 extern uint32_t _sbss, _ebss;
 extern uint32_t _sccmram, _eccmram;
-
+extern void ScanInputs(void);
 extern struct netif netif;
 extern struct MAC_ADDR
     {
@@ -39,13 +39,15 @@ unsigned char IP[4];
 unsigned char MAC[6];
 unsigned int i, sms_old_min, old_reset_min, old_haccp_min;
 unsigned char oldscanhr, oldhr, sntphr, sntpoldhr;
-struct pt pt_ToggleLed, pt_ArpGratuitous, pt_TestLink;
-struct timer ledTimer, arpTimer, linkTimer; //, mqttTimer;
+struct pt pt_ToggleLed, pt_ArpGratuitous, pt_TestLink, pt_AlarmDelay;
+struct timer ledTimer, arpTimer, linkTimer, delayTimer; //, mqttTimer;
+uint8_t mqtt_enable;
 
 PT_THREAD( ptArpGratuitous(struct pt*));
 PT_THREAD( ptTestLink(struct pt*));
 PT_THREAD( ptToggleLed(struct pt*));
 PT_THREAD( ptMQTT(struct pt*));
+PT_THREAD( ptAlarmDelay(struct pt*));
 
 /**
  * @brief  Configures TIM5 to measure the LSI oscillator frequency.
@@ -293,15 +295,36 @@ void InitParam(void)
 
 	    senzor[i].ENBLE = rBuf[EE_SENSOR_ACTIVE];
 	    senzor[i].KANAL = rBuf[EE_CHANNEL];
+	    tmp16 = EEread_16(ee_block + EE_DELAY);
+	    // memcpy(&tmpfloat, &tmp32, 4);
+	    senzor[i].DELAY = tmp16;
 	    tmp32 = EEread_32(ee_block + EE_CALIB);
 	    memcpy(&tmpfloat, &tmp32, 4);
 	    senzor[i].kalibracija = tmpfloat;
+
 	    }
-	EEread(EE_PASS, password, 16);
-	EEread(EE_USERNAME, username, 16);
+	if (!GetResetJumperState())
+	    {
+	    strcpy(username, "s");
+	    strcpy(password, "s");
+	    }
+	else
+	    {
+	    EEread(EE_PASS, password, 16);
+	    EEread(EE_USERNAME, username, 16);
+	    }
 	scansetup = EEread_16(EE_SCAN_TIME);
 	sntp.dston = EEread_8(EE_DST_STATE);
 	sntp.sntpon = EEread_8(EE_SNTP_STATE);
+	dinput[0].enable = EEread_8(EE_INPUT_ALARM1);
+	dinput[0].type = EEread_8(EE_INPUT_TIP1);
+	dinput[0].DELAY = EEread_16(EE_INPUT_DELAY1);
+	dinput[1].enable = EEread_8(EE_INPUT_ALARM2);
+	dinput[1].type = EEread_8(EE_INPUT_TIP2);
+	dinput[1].DELAY = EEread_16(EE_INPUT_DELAY2);
+	dinput[2].enable = EEread_8(EE_INPUT_ALARM3);
+	dinput[2].type = EEread_8(EE_INPUT_TIP3);
+	dinput[2].DELAY = EEread_16(EE_INPUT_DELAY3);
 
 	}
     else
@@ -624,16 +647,30 @@ void lfs_test(void)
  */
 int32_t fsinit(void)
     {
-    lfs_format(&wtlfs, &wtcfg);
     int err = lfs_mount(&wtlfs, &wtcfg);
 // reformat if we can't mount the filesystem
 // this should only happen on the first boot
     if (err)
 	{
-	lfs_format(&wtlfs, &wtcfg);
+	delay_ms(1000);
 	err = lfs_mount(&wtlfs, &wtcfg);
+	if (err)
+	    {
+	    delay_ms(1000);
+	    err = lfs_mount(&wtlfs, &wtcfg);
+	    if (err)
+		{
+		delay_ms(1000);
+		err = lfs_mount(&wtlfs, &wtcfg);
+		if (err)
+		    {
+		    lfs_format(&wtlfs, &wtcfg);
+		    err = lfs_mount(&wtlfs, &wtcfg);
+		    }
+		}
+	    }
 	}
-
+//
     return err;
     }
 
@@ -661,28 +698,55 @@ int main(void)
     char testarray[64];
 
     uint32_t adr32;
-     struct ip4_addr dns_addr;
-//__disable_irq();
+    struct ip4_addr dns_addr;
+    //__disable_irq();
 
-//    NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0xC000);
-    NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x0000);
-    zero_fill_bss();	//brisanje memorije
+         NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0xC000);
+
+//    NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x0000);
+    zero_fill_bss();
     zero_fill_ccm();
     LEDInit();
-
+    delay_ms(1000);
+    i2c_reset();
     delay_ms(1000);
 
+    /* Setup SysTick Timer for 1 msec interrupts  */
+    if (SysTick_Config(SystemCoreClock / 1000))
+	{
+	while (1)
+	    ;/* Capture error */
+	}
+
+    //----------- WDOG INIT ----------------------------------------------------
+    //--------------------------------------------------------------------------
+    //    IwdgSetup();
+    //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     I2Cinit();
+
     InputInit();
     enc424j600Init();
 
     BootJumperInit();
     ResetJumperInit();
 
-////LFS init---------------------------------------------------
+    //IwdgRestart();
+    __enable_irq();
+    DS2482_reset(1);
+    DS2482_init(1);
+    DS2482_reset(2);
+    DS2482_init(2);
+    DS2482_init(3);
+    DS2482_reset(3);
+    DS2482_init(4);
+    DS2482_reset(4);
+
+    IwdgRestart();
     LFS_Config();
     MX25_Spi_Init();
-//ChipErase();
+    //ChipErase();
+    IwdgRestart();
     fsinit();
 //lfs_test();
     temp[0] = 0;
@@ -699,23 +763,17 @@ int main(void)
     LwIP_Init();
     httpd_init();
 
-
     dns_init();
-    adr32=EEread_32(EE_DNS);
-    IP4_ADDR(&dns_addr,(uint8_t)(adr32>>24), (uint8_t)(adr32>>16), (uint8_t)(adr32>>8), (uint8_t)(adr32));
-    dns_setserver(0,&dns_addr);
+    adr32 = EEread_32(EE_DNS);
+    IP4_ADDR(&dns_addr, (uint8_t )(adr32 >> 24), (uint8_t )(adr32 >> 16),
+	    (uint8_t )(adr32 >> 8), (uint8_t )(adr32));
+    dns_setserver(0, &dns_addr);
 
 //WCLinit();
     dst_sntp_init();
     LEDInit();
     LED_OFF();
     LED_ON();
-    /* Setup SysTick Timer for 1 msec interrupts  */
-    if (SysTick_Config(SystemCoreClock / 1000))
-	{
-	while (1)
-	    ;/* Capture error */
-	}
 
     if ((FLASH_OB_GetBOR() & 0x0F) != OB_BOR_LEVEL3)
 	{
@@ -749,10 +807,13 @@ int main(void)
     in1OldState = in1State;
     in2OldState = in2State;
     in3OldState = in3State;
+    mqtt_enable = EEread_8(EE_MQTT_ENABLE);
+    if (mqtt_enable > 1)
+	EEwrite_8(EE_MQTT_ENABLE, 0);
 
 //----------- WDOG INIT ----------------------------------------------------
 //--------------------------------------------------------------------------
-IwdgSetup();
+    IwdgSetup();
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 
@@ -769,18 +830,20 @@ IwdgSetup();
 	if (enc424j600IfPacketArrived())
 	    LwIP_Pkt_Handle();
 	ptToggleLed(&pt_ToggleLed);
+	ptAlarmDelay(&pt_AlarmDelay);
 	//ptMQTT(&pt_MQTT);
 	LwIP_Periodic_Handle(LocalTime);
 	ReadTemperature();
 
-//CheckBackup();
-//CheckSNTPScan();
+	//CheckBackup();
+	//CheckSNTPScan();
 	CheckSNTP();
-
-	wcl_poll();
+	ScanInputs();
+	-wcl_poll();
 	input_poll();
 	logger_alarm_poll();
-	mqtt_scan();
+	if (mqtt_enable)
+	    mqtt_scan();
 
 	ptArpGratuitous(&pt_ArpGratuitous);
 	ptTestLink(&pt_TestLink);
@@ -790,7 +853,6 @@ IwdgSetup();
 
 PT_THREAD(ptToggleLed(struct pt *pt))
     {
-
     PT_BEGIN(pt)
     ;
     timer_set(&ledTimer, 1000);
@@ -800,9 +862,50 @@ PT_THREAD(ptToggleLed(struct pt *pt))
     PT_WAIT_UNTIL(pt, timer_expired(&ledTimer));
     LED_OFF();
 PT_END(pt);
-}
+}/***** ptToggleLed() *****/
 
-/***** ptToggleLed() *****/
+PT_THREAD(ptAlarmDelay(struct pt *pt))
+{
+uint32_t delaytimer;
+uint8_t cnt;
+
+PT_BEGIN(pt)
+;
+timer_set(&delayTimer, 1000);
+PT_WAIT_UNTIL(pt, timer_expired(&delayTimer));
+for (cnt = 0; cnt < 8; cnt++)
+    {
+    delaytimer = NVRAM_Read32(NV_DELAY_SEN1+(cnt*4));
+    if (delaytimer)
+	delaytimer++;
+    if (delaytimer > senzor[cnt].DELAY)
+	{	//istekao delay, šalji alarme
+	NVRAM_Write32(NV_DELAY_SEN1+(cnt*4), 0);
+	SendWApp(cnt);
+	SendSMS(cnt, 1);
+	}
+    else
+	NVRAM_Write32(NV_DELAY_SEN1+(cnt*4), delaytimer);
+    }
+
+for (cnt = 0; cnt < 3; cnt++)
+    {
+    delaytimer = NVRAM_Read32(NV_DELAY_IN1+(cnt*4));
+    if (delaytimer)
+	delaytimer++;
+    if (delaytimer > dinput[cnt].DELAY)
+	{
+	NVRAM_Write32(NV_DELAY_IN1+(cnt*4), 0);
+	SendWAppInput(cnt);
+	SendSMS(cnt, 2);
+
+	}
+    else
+	NVRAM_Write32(NV_DELAY_IN1+(cnt*4), delaytimer);
+    }
+
+PT_END(pt);
+}/***** ptAlarmDelay() *****/
 
 PT_THREAD(ptArpGratuitous(struct pt *pt))
 {

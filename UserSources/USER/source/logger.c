@@ -28,8 +28,6 @@ char send_mail_flag = 0;
 
 char mailState = MAIL_FREE;
 
-
-
 uint8_t wAppStatus, wAppflag;
 struct pt pt_Wapp;
 uint32_t log_point, logcount_point;
@@ -170,57 +168,31 @@ void CreateAlarmName(char *fname, UINT8 god, UINT8 mjes)
     lfs_create(fname, tBuf);
     }/****** CreateAlarmName() *****/
 
-void CreateAlarmSenzorName(char *fname, UINT8 senzor)
+void CreateDigitalAlarmName(char *fname, UINT8 god, UINT8 mjes)
     {
-    //Ime fajla je SENZOR1.CSV;
+    //Ime fajla je D0408.CSV; 04 je misec, 08 je godin
     char tBuf[120];
-    UINT frval;
-    if (senzor == 1)
-	strcpy(fname, "0:SENZOR1.CSV");
-    else if (senzor == 2)
-	strcpy(fname, "0:SENZOR2.CSV");
-    else if (senzor == 3)
-	strcpy(fname, "0:SENZOR3.CSV");
-    else if (senzor == 4)
-	strcpy(fname, "0:SENZOR4.CSV");
-    else if (senzor == 5)
-	strcpy(fname, "0:SENZOR5.CSV");
-    else if (senzor == 6)
-	strcpy(fname, "0:SENZOR6.CSV");
-    else if (senzor == 7)
-	strcpy(fname, "0:SENZOR7.CSV");
-    else if (senzor == 8)
-	strcpy(fname, "0:SENZOR8.CSV");
-//   fres=f_open(&logfp,datname,FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
-//   if(logfp.fsize==0)
-//      {//fajl ne postoji, otvara se i upisuje se header;
-//      sprintf(tBuf,"DATUM;VRIJEME;TEMPERATURA;TIP ALARMA\r\n");
-//      fres=f_write(&logfp,tBuf,strlen(tBuf),&frval);
-//      }
-//   f_close(&logfp);
-    }/****** CreateAlarmSenzorName() *****/
 
-void SaveLog(UINT8 tip)
-    {
-    char dsave[60];
     UINT frval;
-    getTime(&sat, &minuta, &sekunda);
-    getDate(&godina, &mjesec, &datum, &dan);
-    CreateDatName(&datname[0], godina, mjesec);
-//   fres=f_open(&logfp,"1:log.csv",FA_OPEN_ALWAYS | FA_WRITE );
-//   f_sync(&logfp);
-//   fres=f_lseek(&logfp,logfp.fsize);
-//   sprintf(dsave,"%d;%d:%d:%d;",datum,sat,minuta,sekunda);
-//   sprintf(dsave,"%d/%d/%d;%d:%d:%d;",datum,mjesec,godina,sat,minuta,sekunda);
-//   strcat(dsave,";");
-//   if(tip==LOG_RESET)
-//   strcat(dsave,"RESET;");
-//   else if(tip==LOG_TEMP)
-//   strcat(dsave,"TEMP;");
-//   strcat(dsave,"\r\n");
-//   fresult=f_write(&logfp,dsave,strlen(dsave),&frval);
-//   f_close(&logfp);
-    }/***** SaveLog() *****/
+    strcpy(fname, "A");
+    if (mjes < 10)
+	{
+	*(fname + 1) = '0';
+	*(fname + 2) = mjes + 0x30;
+	}
+    else
+	{
+	*(fname + 1) = '1';
+	*(fname + 2) = mjes + 0x26;
+	}
+    sprintf((fname + 3), "%d", god);
+    strcat(fname, ".CSV");
+
+    sprintf(tBuf, "MJESEC;%d;GODINA;%d;", mjes, god + 2000);
+    strcat(tBuf, "\r\nDATUM;VRIJEME;INPUT\r\n");
+
+    lfs_create(fname, tBuf);
+    }/****** CreateDigitalAlarmName() *****/
 
 void SaveTemp(void)
     {
@@ -322,9 +294,18 @@ void SaveHaccp(void)
     lfs_append(datname, dsave, strlen(dsave));
     }/***** SaveHaccp() *****/
 
-void SendWApp(float TAlarm, UINT8 broj_senzora, UINT8 type)
+SendWApp(UINT8 broj_senzora)
+//void SendWApp(float TAlarm, UINT8 broj_senzora, UINT8 type)
     {
     char ttoa[10];
+    uint8_t type;
+    float TAlarm = temp[broj_senzora];
+    if (TAlarm > senzor[broj_senzora].HIGHLIMIT)
+	type = ALARM_HI;
+    else if (TAlarm < senzor[broj_senzora].LOWLIMIT)
+	type = ALARM_LOW;
+    else
+	type = NO_ALARM;
 
     EEread(EE_OBJECT_NAME, rBuf, 64);
     strcpy(wapp.Msg, (char const*) rBuf);	// naziv objekta
@@ -383,38 +364,118 @@ void SendWApp(float TAlarm, UINT8 broj_senzora, UINT8 type)
 	}
     }/***** SendWApp() *****/
 
-void SendSMS(float TAlarm, UINT8 broj_senzora, UINT8 type)
+SendWAppInput(UINT8 broj_senzora)
+    {
+    char ttoa[10];
+    uint8_t cnt = broj_senzora - 1;
+    uint8_t type;
+
+    EEread(EE_OBJECT_NAME, rBuf, 64);
+    strcpy(wapp.Msg, (char const*) rBuf);	// naziv objekta
+    strcat(wapp.Msg, "\n");
+
+    EEread(EE_INPUT_NAME1 + (broj_senzora * 0x20), rBuf, 30);
+    strcat(wapp.Msg, (char const*) rBuf);	// naziv objekta
+    strcat(wapp.Msg, "\n");
+    strcat(wapp.Msg, " ALARM  \r");
+
+    EEread(EE_INPUT_WAPP1, rBuf, 5);
+    wAppflag = 0;
+    wapp.enable1 = 0;
+    wapp.enable2 = 0;
+    wapp.enable3 = 0;
+    wapp.enable4 = 0;
+    wapp.enable5 = 0;
+    if (rBuf[0])
+	{
+	wAppflag = 1;
+	wapp.enable1 = 1;
+	}
+    if (rBuf[1])
+	{
+	wAppflag = 1;
+	wapp.enable2 = 1;
+	}
+    if (rBuf[2])
+	{
+	wAppflag = 1;
+	wapp.enable3 = 1;
+	}
+    if (rBuf[3])
+	{
+	wAppflag = 1;
+	wapp.enable4 = 1;
+	}
+    if (rBuf[4])
+	{
+	wAppflag = 1;
+	wapp.enable5 = 1;
+	}
+    }/***** SendWApp() *****/
+
+void SendSMS(uint8_t broj_senzora, uint8_t tipalarma)
     {
     char ttoa[10];
     char sms1, sms2, sms3, sms4, sms5;
-    broj_senzora++;
-    EEread(0x100 * (broj_senzora) + EE_SENSOR_NAME, rBuf, 16);
+    uint8_t cnt = broj_senzora - 1;
+    uint8_t type;
+
+    if (tipalarma == 1)
+	{	//ALARM senzora temperature
+	broj_senzora++;
+	EEread(0x100 * (broj_senzora) + EE_SENSOR_NAME, rBuf, 16);
+
+	float TAlarm = temp[broj_senzora - 1];
+	if (TAlarm > senzor[cnt].HIGHLIMIT)
+	    type = ALARM_HI;
+	else if (TAlarm < senzor[cnt].LOWLIMIT)
+	    type = ALARM_LOW;
+	else
+	    type = NO_ALARM;
 //    READ_FLASH(broj_senzora*0x100,rBuf,256);
-    strcpy(infobip_poruka, (char const*) &rBuf[0]);	// naziv senzora
-    strcat(infobip_poruka, "\r\n");
-    if (type == ALARM_HI)
-	{
-	strcat(infobip_poruka, " ALARM VISOKE TEMPERATURE ");
-	temp_to_ascii(TAlarm, ttoa);
-	strcat(infobip_poruka, ttoa);
-	strcat(infobip_poruka, " C\r\n");
+	strcpy(infobip_poruka, (char const*) &rBuf[0]);	// naziv senzora
+	strcat(infobip_poruka, "\r\n");
+	if (type == ALARM_HI)
+	    {
+	    strcat(infobip_poruka, " ALARM VISOKE TEMPERATURE ");
+	    temp_to_ascii(TAlarm, ttoa);
+	    strcat(infobip_poruka, ttoa);
+	    strcat(infobip_poruka, " C\r\n");
+	    }
+	else if (type == ALARM_LOW)
+	    {
+	    strcat(infobip_poruka, " ALARM NISKE TEMPERATURE \r\n");
+	    temp_to_ascii(TAlarm, ttoa);
+	    strcat(infobip_poruka, ttoa);
+	    strcat(infobip_poruka, " C\r\n");
+	    }
+	else if (type == ALARM_ERR)
+	    strcat(infobip_poruka, " GRESKA OCITANJA SENZORA \r\n");
+	EEread(0x100 * (broj_senzora) + EE_SMS1, rBuf, 5);
+	sms1 = rBuf[0x00];
+	sms2 = rBuf[0x01];
+	sms3 = rBuf[0x02];
+	sms4 = rBuf[0x03];
+	sms5 = rBuf[0x04];
+	send_infobip(sms1, sms2, sms3, sms4, sms5);
 	}
-    else if (type == ALARM_LOW)
+    else if (tipalarma == 2)	//ALARM digitalnih ulaza
 	{
-	strcat(infobip_poruka, " ALARM NISKE TEMPERATURE \r\n");
-	temp_to_ascii(TAlarm, ttoa);
-	strcat(infobip_poruka, ttoa);
-	strcat(infobip_poruka, " C\r\n");
+	EEread(EE_INPUT_NAME1 + (broj_senzora * 0x20), rBuf, 30);
+	strcpy(infobip_poruka, (char const*) &rBuf[0]);	// naziv senzora
+	strcat(infobip_poruka, "\r\n");
+	strcat(infobip_poruka, " ALARM ");
+	strcat(infobip_poruka, "\r\n");
+
+	EEread(EE_INPUT_SMS1, rBuf, 5);
+	sms1 = rBuf[0x00];
+	sms2 = rBuf[0x01];
+	sms3 = rBuf[0x02];
+	sms4 = rBuf[0x03];
+	sms5 = rBuf[0x04];
+	send_infobip(sms1, sms2, sms3, sms4, sms5);
 	}
-    else if (type == ALARM_ERR)
-	strcat(infobip_poruka, " GRESKA OCITANJA SENZORA \r\n");
-    EEread(0x100 * (broj_senzora) + EE_SMS1, rBuf, 5);
-    sms1 = rBuf[0x00];
-    sms2 = rBuf[0x01];
-    sms3 = rBuf[0x02];
-    sms4 = rBuf[0x03];
-    sms5 = rBuf[0x04];
-    send_infobip(sms1, sms2, sms3, sms4, sms5);
+
     }/***** SendSMS() *****/
 
 void SendSMSStatus(void)
@@ -428,7 +489,7 @@ void SendSMSStatus(void)
     sms3 = 0;
     sms4 = 0;
     sms5 = 0;
-    //temp_to_ascii(temp[cnt],ttoa);
+//temp_to_ascii(temp[cnt],ttoa);
     for (k = 0; k < NUMBER_OF_SENSOR; k++)
 	{
 	if (senzor[k].ENBLE)
@@ -465,8 +526,8 @@ void SaveAlarm(float TAlarm, UINT8 sensor_num, UINT8 type)
     char ttoa[10];
     UINT8 tipalarma = type;
     UINT frval;
-    SendWApp(TAlarm, sensor_num, type);
-    SendSMS(TAlarm, sensor_num, type);
+//SendWApp(TAlarm, sensor_num, type);
+//SendSMS(TAlarm, sensor_num, type);
     getTime(&sat, &minuta, &sekunda);
     getDate(&godina, &mjesec, &datum, &dan);
     CreateAlarmName(&datname[0], godina, mjesec);
@@ -482,6 +543,23 @@ void SaveAlarm(float TAlarm, UINT8 sensor_num, UINT8 type)
 	strcat(dsave, "VISOKA TEMPERATURA;");
     else if (type == ALARM_LOW)
 	strcat(dsave, "NISKA TEMPERATURA;");
+    strcat(dsave, "\r\n");
+    lfs_append(datname, dsave, strlen(dsave));
+
+    }/***** SaveAlarm() *****/
+
+void SaveDigitalAlarm(uint8_t sensor_num)
+    {
+    char dsave[100];
+    getTime(&sat, &minuta, &sekunda);
+    getDate(&godina, &mjesec, &datum, &dan);
+    CreateAlarmName(&datname[0], godina, mjesec);
+    sprintf(dsave, "%d;%d:%d:%d;", datum, sat, minuta, sekunda);
+    sensor_num++;
+    EEread(sensor_num * 0x100 + EE_INPUT_NAME1, rBuf, 30);
+    strcat(dsave, (char const*) &rBuf[0]);
+    strcat(dsave, ";");	// naziv senzora
+
     strcat(dsave, "\r\n");
     lfs_append(datname, dsave, strlen(dsave));
 
@@ -535,7 +613,7 @@ PT_THREAD(ptWapp(struct pt *pt))
 
     wAppflag = 0;
 PT_END(pt);
-}/***** ptMail() *****/
+}/***** ptWapp() *****/
 
 void logger_alarm_poll(void)
 {

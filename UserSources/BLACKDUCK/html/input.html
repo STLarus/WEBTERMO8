@@ -36,13 +36,14 @@
             $(document).ready(function () {
                 $.ajax({
                     type: "GET",
-                    //url: "input.xml?sid=" + Math.random(),
-                    url: "input.xml?sid=",
+                    url: "input.xml?sid=" + Math.random(),
+                    //url: "input.xml",
                     dataType: "xml",
                     cache: false,
                     success: function (xml) {
                         $(xml).find('INPUT').each(function () {
                             $("#name1").val($(this).find('NAME1').text());
+                           
                             $("#name2").val($(this).find('NAME2').text());
                             $("#name3").val($(this).find('NAME3').text());
 
@@ -61,8 +62,6 @@
                                 $("#alarm3").val(true);
                             else
                                 $("#alarm3").val(false);
-
-
                             temp = $(this).find('TIP1').text();
                             if (temp == "NO")
                                 $("#tip1").val(true);
@@ -79,33 +78,40 @@
                             else
                                 $("#tip3").val(false);
 
+                            temp = parseFloat($(this).find('DELAY1').text());
+                            $('#delay1').jqxNumberInput('val', temp);
+                            temp = parseFloat($(this).find('DELAY2').text());
+                            $('#delay2').jqxNumberInput('val', temp);
+                            temp = parseFloat($(this).find('DELAY3').text());
+                            $('#delay3').jqxNumberInput('val', temp);
 
-                            var vMAIL1 = $(this).find('MAIL1').text();
-                            var vMAIL2 = $(this).find('MAIL2').text();
-                            var vMAIL3 = $(this).find('MAIL3').text();
-                            var vMAIL4 = $(this).find('MAIL4').text();
-                            var vMAIL5 = $(this).find('MAIL5').text();
 
-                            if (vMAIL1 === "ON")
-                                $("#email1").val(true);
+                            var vWAPP1 = $(this).find('WAPP1').text();
+                            var vWAPP2 = $(this).find('WAPP2').text();
+                            var vWAPP3 = $(this).find('WAPP3').text();
+                            var vWAPP4 = $(this).find('WAPP4').text();
+                            var vWAPP5 = $(this).find('WAPP5').text();
+
+                            if (vWAPP1 === "ON")
+                                $("#wapp1").val(true);
                             else
-                                $("#email1").val(false);
-                            if (vMAIL2 === "ON")
-                                $("#email2").val(true);
+                                $("#wapp1").val(false);
+                            if (vWAPP2 === "ON")
+                                $("#wapp2").val(true);
                             else
-                                $("#email2").val(false);
-                            if (vMAIL3 === "ON")
-                                $("#email3").val(true);
+                                $("#wapp2").val(false);
+                            if (vWAPP3 === "ON")
+                                $("#wapp3").val(true);
                             else
-                                $("#email3").val(false);
-                            if (vMAIL4 === "ON")
-                                $("#email4").val(true);
+                                $("#wapp3").val(false);
+                            if (vWAPP4 === "ON")
+                                $("#wapp4").val(true);
                             else
-                                $("#email4").val(false);
-                            if (vMAIL5 === "ON")
-                                $("#email5").val(true);
+                                $("#wapp4").val(false);
+                            if (vWAPP5 === "ON")
+                                $("#wapp5").val(true);
                             else
-                                $("#email5").val(false);
+                                $("#wapp5").val(false);
                             var vSMS1 = $(this).find('SMS1').text();
                             var vSMS2 = $(this).find('SMS2').text();
                             var vSMS3 = $(this).find('SMS3').text();
@@ -178,26 +184,26 @@
 
 
 
-            if (($("#email1").val()) === true)
-                var chkMAIL1 = "ON";
+            if (($("#wapp1").val()) === true)
+                var chkWAPP1 = "ON";
             else
-                var chkMAIL1 = "OFF";
-            if (($("#email2").val()) === true)
-                var chkMAIL2 = "ON";
+                var chkWAPP1 = "OFF";
+            if (($("#wapp2").val()) === true)
+                var chkWAPP2 = "ON";
             else
-                var chkMAIL2 = "OFF";
-            if (($("#email3").val()) === true)
-                var chkMAIL3 = "ON";
+                var chkWAPP2 = "OFF";
+            if (($("#wapp3").val()) === true)
+                var chkWAPP3 = "ON";
             else
-                var chkMAIL3 = "OFF";
-            if (($("#email4").val()) === true)
-                var chkMAIL4 = "ON";
+                var chkWAPP3 = "OFF";
+            if (($("#wapp4").val()) === true)
+                var chkWAPP4 = "ON";
             else
-                var chkMAIL4 = "OFF";
-            if (($("#email5").val()) === true)
-                var chkMAIL5 = "ON";
+                var chkWAPP4 = "OFF";
+            if (($("#wapp5").val()) === true)
+                var chkWAPP5 = "ON";
             else
-                var chkMAIL5 = "OFF";
+                var chkWAPP5 = "OFF";
 
 
 
@@ -234,20 +240,22 @@
             xmlDocument += "<TIP1>" + chkTIP1 + "</TIP1>";
             xmlDocument += "<TIP2>" + chkTIP2 + "</TIP2>";
             xmlDocument += "<TIP3>" + chkTIP3 + "</TIP3>";
+            xmlDocument += "<DELAY1>" + $('#delay1').jqxNumberInput('val') + "</DELAY1>";
+            xmlDocument += "<DELAY2>" + $('#delay2').jqxNumberInput('val') + "</DELAY2>";
+            xmlDocument += "<DELAY3>" + $('#delay3').jqxNumberInput('val') + "</DELAY3>";
 
-
-            xmlDocument += "<MAIL1>" + chkMAIL1 + "</MAIL1>";
-            xmlDocument += "<MAIL2>" + chkMAIL2 + "</MAIL2>";
-            xmlDocument += "<MAIL3>" + chkMAIL3 + "</MAIL3>";
-            xmlDocument += "<MAIL4>" + chkMAIL4 + "</MAIL4>";
-            xmlDocument += "<MAIL5>" + chkMAIL5 + "</MAIL5>";
+            xmlDocument += "<WAPP1>" + chkWAPP1 + "</WAPP1>";
+            xmlDocument += "<WAPP2>" + chkWAPP2 + "</WAPP2>";
+            xmlDocument += "<WAPP3>" + chkWAPP3 + "</WAPP3>";
+            xmlDocument += "<WAPP4>" + chkWAPP4 + "</WAPP4>";
+            xmlDocument += "<WAPP5>" + chkWAPP5 + "</WAPP5>";
             xmlDocument += "<SMS1>" + chkSMS1 + "</SMS1>";
             xmlDocument += "<SMS2>" + chkSMS2 + "</SMS2>";
             xmlDocument += "<SMS3>" + chkSMS3 + "</SMS3>";
             xmlDocument += "<SMS4>" + chkSMS4 + "</SMS4>";
             xmlDocument += "<SMS5>" + chkSMS5 + "</SMS5>";
             xmlDocument += "</INPUT>";
-            
+
             $.ajax({
                 url: "input.sva",
                 type: "POST",
@@ -258,7 +266,7 @@
                 success: function () { alert('Podaci spremljeni'); },
                 error: function () { alert('Greska'); }
             });
-                
+
         }
 
 
@@ -305,6 +313,15 @@
                     onLabel: 'NO',
                     offLabel: 'NC'
                 });
+                $("#delay1").jqxNumberInput({
+                    width: '70px',
+                    height: '25px',
+                    inputMode: 'simple',
+                    decimalDigits: 0,
+                    min: 0,
+                    max: 10800,
+                    spinButtons: true
+                });
                 $('#alarm2').jqxSwitchButton({
                     width: '150px',
                     height: '25px',
@@ -316,6 +333,15 @@
                     height: '25px',
                     onLabel: 'NO',
                     offLabel: 'NC'
+                });
+                $("#delay2").jqxNumberInput({
+                    width: '70px',
+                    height: '25px',
+                    inputMode: 'simple',
+                    decimalDigits: 0,
+                    min: 0,
+                    max: 10800,
+                    spinButtons: true
                 });
                 $('#alarm3').jqxSwitchButton({
                     width: '150px',
@@ -329,16 +355,28 @@
                     onLabel: 'NO',
                     offLabel: 'NC'
                 });
+                $("#delay3").jqxNumberInput({
+                    width: '70px',
+                    height: '25px',
+                    inputMode: 'simple',
+                    decimalDigits: 0,
+                    min: 0,
+                    max: 10800,
+                    spinButtons: true
+                });
                 $("#sms1").jqxCheckBox({ width: 60, height: 25 });
                 $("#sms2").jqxCheckBox({ width: 60, height: 25 });
                 $("#sms3").jqxCheckBox({ width: 60, height: 25 });
                 $("#sms4").jqxCheckBox({ width: 60, height: 25 });
                 $("#sms5").jqxCheckBox({ width: 60, height: 25 });
-                $("#email1").jqxCheckBox({ width: 60, height: 25 });
-                $("#email2").jqxCheckBox({ width: 60, height: 25 });
-                $("#email3").jqxCheckBox({ width: 60, height: 25 });
-                $("#email4").jqxCheckBox({ width: 60, height: 25 });
-                $("#email5").jqxCheckBox({ width: 60, height: 25 });
+                $("#wapp1").jqxCheckBox({ width: 60, height: 25 });
+                $("#wapp2").jqxCheckBox({ width: 60, height: 25 });
+                $("#wapp3").jqxCheckBox({ width: 60, height: 25 });
+                $("#wapp4").jqxCheckBox({ width: 60, height: 25 });
+                $("#wapp5").jqxCheckBox({ width: 60, height: 25 });
+                $("#name1").jqxInput({ width: '200px', height: '25px' });
+                $("#name2").jqxInput({ width: '200px', height: '25px' });
+                $("#name3").jqxInput({ width: '200px', height: '25px' });
             }
             );
 
@@ -368,27 +406,33 @@
     <div id='edit'>
         <div align="center">
             <table>
-                <tr bgcolor="#F0F4FA">
-                    <td class="div_font_hd2">ULAZ 1</td>
+                <tr>
+                    <td class="div_font_hd1">ULAZ 1</td>
                 </tr>
-                <tr bgcolor="#F0F4FA">
+                <tr>
                     <td class="div_font_hd2">Naziv senzora</td>
                     <td><input name="Naziv1" type="text" id="name1" size="30" maxlength="24" /></td>
                 </tr>
 
 
-
-                <td class="div_font_hd2">Alarm ulaz 1</td>
-                <td>
-                    <div style='margin-top: 3px;' id='alarm1'>
-                </td>
+                <tr>
+                    <td class="div_font_hd2">Alarm ulaz 1</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='alarm1'>
+                    </td>
                 </tr>
 
-
-                <td class="div_font_hd2">Tip alarma 1</td>
-                <td>
-                    <div style='margin-top: 3px;' id='tip1'>
-                </td>
+                <tr>
+                    <td class="div_font_hd2">Tip alarma 1</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='tip1'>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="div_font_hd2">Delay 1 [s]</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='delay1'>
+                    </td>
                 </tr>
 
                 <tr>
@@ -396,12 +440,12 @@
                     <td></td>
                 </tr>
 
-                <tr bgcolor="#F0F4FA">
-                    <td class="div_font_hd2">ULAZ 2</td>
+                <tr>
+                    <td class="div_font_hd1">ULAZ 2</td>
                 </tr>
 
-                <tr bgcolor="#F0F4FA">
-                    <td class="div_font_hd2">Naziv ulaza</td>
+                <tr>
+                    <td class="div_font_hd2">Naziv senzora</td>
                     <td><input name="Naziv2" type="text" id="name2" size="30" maxlength="24" /></td>
                 </tr>
 
@@ -420,15 +464,22 @@
                     </td>
                 </tr>
                 <tr>
+                    <td class="div_font_hd2">Delay 2 [s]</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='delay2'>
+                    </td>
+                </tr>
+
+                <tr>
                     <td style="height:40px;"></td>
                     <td></td>
                 </tr>
 
-                <tr bgcolor="#F0F4FA">
-                    <td class="div_font_hd2">ULAZ 3</td>
+                <tr>
+                    <td class="div_font_hd1">ULAZ 3</td>
                 </tr>
 
-                <tr bgcolor="#F0F4FA">
+                <tr>
                     <td class="div_font_hd2">Naziv ulaza</td>
                     <td><input name="Naziv3" type="text" id="name3" size="30" maxlength="24" /></td>
                 </tr>
@@ -441,11 +492,17 @@
                 </tr>
 
 
-
-                <td class="div_font_hd2">Tip alarma 3</td>
-                <td>
-                    <div style='margin-top: 3px;' id='tip3'>
-                </td>
+                <tr>
+                    <td class="div_font_hd2">Tip alarma 3</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='tip3'>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="div_font_hd2">Delay 3 [s]</td>
+                    <td>
+                        <div style='margin-top: 3px;' id='delay3'>
+                    </td>
                 </tr>
 
 
@@ -466,15 +523,15 @@
                     <td>
                     <td class="div_font_hd2">SMS 5
                     <td>
-                    <td class="div_font_hd2">eMail 1
+                    <td class="div_font_hd2">WApp 1
                     <td>
-                    <td class="div_font_hd2">eMail 2
+                    <td class="div_font_hd2">WApp 2
                     <td>
-                    <td class="div_font_hd2">eMail 3
+                    <td class="div_font_hd2">WApp 3
                     <td>
-                    <td class="div_font_hd2">eMail 4
+                    <td class="div_font_hd2">WApp 4
                     <td>
-                    <td class="div_font_hd2">eMail 5
+                    <td class="div_font_hd2">WApp 5
                     <td>
                 </tr>
                 <tr>
@@ -495,19 +552,19 @@
                     <td>
 
                     <td>
-                        <div id='email1' style='margin-left: 10px; float: left;'>
+                        <div id='wapp1' style='margin-left: 10px; float: left;'>
                     <td>
                     <td>
-                        <div id='email2' style='margin-left: 10px; float: left;'>
+                        <div id='wapp2' style='margin-left: 10px; float: left;'>
                     <td>
                     <td>
-                        <div id='email3' style='margin-left: 10px; float: left;'>
+                        <div id='wapp3' style='margin-left: 10px; float: left;'>
                     <td>
                     <td>
-                        <div id='email4' style='margin-left: 10px; float: left;'>
+                        <div id='wapp4' style='margin-left: 10px; float: left;'>
                     <td>
                     <td>
-                        <div id='email5' style='margin-left: 10px; float: left;'>
+                        <div id='wapp5' style='margin-left: 10px; float: left;'>
                     <td>
                 </tr>
 
